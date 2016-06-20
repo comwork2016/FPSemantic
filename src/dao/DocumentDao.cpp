@@ -253,9 +253,9 @@ std::string DocumentDao::QuerySIMSimilarity(const Document* doc)
 查询句子相似的文档
 */
 //std::vector<FingerPrintsSimilarDocument> DocumentDao::GetSentenceSimilarDocument(doc)
-void DocumentDao::GetSentenceSimilarDocument(const Document* doc)
+std::vector<SimilarDocRange> DocumentDao::GetSentenceSimilarDocument(const Document* doc)
 {
-    //对每句话，查询句子范围内相同词语超过50%的句子
+    std::vector<SimilarDocRange> vec_SimilarDocRange;
     for(int i=0; i<doc->GetvecParagraph().size(); i++)
     {
         Paragraph para = doc->GetvecParagraph()[i];
@@ -263,17 +263,44 @@ void DocumentDao::GetSentenceSimilarDocument(const Document* doc)
         {
             Sentence sen = para.vec_Sentences[j];
             std::string str_Search = doc->GetstrContents().substr(sen.textRange.offset,sen.textRange.length);
-            //记录词语位置信息，并合并文档中的位置信息
-            std::map<DOC_ID,std::map<int,Range> > map_DocWordNoPosition;//保存所有词语的位置信息。
-            std::map<DOC_ID,std::vector<PAIRDOCRANGETIMES> > map_DocRangeVector; //单词范围的统计信息
+            std::map<DOC_ID,int> map_DocOcurCount;
+            //每一遍，统计文档出现的次数
+            std::vector<std::map<DOC_ID,WordIndexRecord*> > vec_AllWordIndex;
             for(int k=0; k<sen.vec_splitedHits.size(); k++)
             {
                 std::string str_Word = sen.vec_splitedHits[k].word;
                 std::map<DOC_ID,WordIndexRecord*> map_WordDocIndexRecord = QueryIndexOfWord(str_Word);//单词索引的文档信息
+                vec_AllWordIndex.push_back(map_WordDocIndexRecord);
+                //遍历索引信息，统计文档出现的位置，能有效减少合并范围的个数
+                for(std::map<DOC_ID,WordIndexRecord*>::iterator it = map_WordDocIndexRecord.begin(); it != map_WordDocIndexRecord.end(); it++)
+                {
+                    DOC_ID docID = it->first;
+                    if(map_DocOcurCount.find(docID) == map_DocOcurCount.end())
+                    {
+                        map_DocOcurCount[docID] = 1;
+                    }
+                    else
+                    {
+                        map_DocOcurCount[docID] = map_DocOcurCount[docID]+1;
+                    }
+                }
+            }
+            //第二遍，统计相似
+            //记录词语位置信息，并合并文档中的位置信息
+            std::map<DOC_ID,std::map<int,Range> > map_DocWordNoPosition;//保存所有词语的位置信息。
+            std::map<DOC_ID,std::vector<PAIRDOCRANGETIMES> > map_DocRangeVector; //单词范围的统计信息
+            for(int k=0; k<vec_AllWordIndex.size(); k++)
+            {
+                std::string str_Word = sen.vec_splitedHits[k].word;
+                std::map<DOC_ID,WordIndexRecord*> map_WordDocIndexRecord = vec_AllWordIndex[k];//单词索引的文档信息
                 //遍历索引信息，保存词语位置信息，并保存生成DOC_ID，位置的次数关系
                 for(std::map<DOC_ID,WordIndexRecord*>::iterator it = map_WordDocIndexRecord.begin(); it != map_WordDocIndexRecord.end(); it++)
                 {
                     DOC_ID docID = it->first;
+                    if(map_DocOcurCount[docID] < KGRAM)
+                    {
+                        continue;
+                    }
                     WordIndexRecord* record = it->second;
                     std::vector<WordPos> vec_WordPos = record->GetVecPos();
                     //保存每一个词语的位置范围
@@ -298,7 +325,7 @@ void DocumentDao::GetSentenceSimilarDocument(const Document* doc)
                         else
                         {
                             std::vector<PAIRDOCRANGETIMES> vec_WordDocRangeTimes = map_WordInDocRangeVector[docID];//某个文档已保存的位置向量
-                            while(RangeUtil::MergeRangeToVector(vec_WordDocRangeTimes,wordDocRangeTimes));//一直往下合并
+                            while(RangeUtil::MergeRangeToVector(vec_WordDocRangeTimes,wordDocRangeTimes)!=-1);//一直往下合并
                             map_WordInDocRangeVector[docID] = vec_WordDocRangeTimes;
                         }
                     }
@@ -318,16 +345,15 @@ void DocumentDao::GetSentenceSimilarDocument(const Document* doc)
                         else
                         {
                             std::vector<PAIRDOCRANGETIMES> vec_DocRangeTimes = map_DocRangeVector[docID];//某个文档已保存的位置向量
-                            while(RangeUtil::MergeRangeToVector(vec_DocRangeTimes,pair_DocRangeTimes));
+                            while(RangeUtil::MergeRangeToVector(vec_DocRangeTimes,pair_DocRangeTimes)!=-1);
                             map_DocRangeVector[docID] = vec_DocRangeTimes;
-                            //std::cin.get();
                         }
                     }
                     map_DocWordNoPosition[docID] = map_NoPositionInDoc;
                 }
             }
             //挑选出现次数大于阈值的短语范围
-            SentenceSimilarity* ss = new SentenceSimilarity();
+            LongestSimilarSentence* lss = new LongestSimilarSentence();
             for(std::map<DOC_ID,std::vector<PAIRDOCRANGETIMES> >::iterator it = map_DocRangeVector.begin(); it != map_DocRangeVector.end(); it++)
             {
                 DOC_ID docID = it->first;
@@ -338,46 +364,55 @@ void DocumentDao::GetSentenceSimilarDocument(const Document* doc)
                     //if(docRangeTimes.second > 0.5*sen.vec_splitedHits.size())
                     if(docRangeTimes.second > KGRAM)//超过4个相同的就计算相似度
                     {
-                        Range range = docRangeTimes.first;
+                        Range range_Sim = docRangeTimes.first;//相似句子的范围
                         std::map<int,Range> map_NoPositionInDoc = map_DocWordNoPosition[docID];
-                        int begin = map_NoPositionInDoc[range.begin].begin;
-                        int end = map_NoPositionInDoc[range.end].end;
+                        int n_SimDocBegin = map_NoPositionInDoc[range_Sim.begin].begin;
+                        int n_SimDocEnd = map_NoPositionInDoc[range_Sim.end].end;
                         //std::cout<<docID<<"\t["<<range.begin<<","<<range.end<<"]"<<std::endl;
                         //std::cout<<docID<<"\t["<<begin<<","<<end<<"]"<<std::endl;
                         Document* docDB = new Document(docID);
-                        /*if(docID=="./in/utf_1553.txt")
-                        {
-                            delete docDB;
-                            docDB = new Document(docID,true);
-                            docDB->Display();
-                        }*/
-                        std::string str_Similar = docDB->GetstrContents().substr(begin,end-begin);
-                        double d_sim = ss->CalcSentenceSimilarity(str_Search,str_Similar);
+                        std::string str_Similar = docDB->GetstrContents().substr(n_SimDocBegin,n_SimDocEnd-n_SimDocBegin);
                         //std::cout<<str_Search<<std::endl;
                         //std::cout<<str_Similar<<std::endl;
-                        //std::cout<<"similarity is "<<d_sim<<std::endl<<std::endl;
-                        if(d_sim > SIMGATE)
+                        std::vector<PAIRSENRANGE> vec_PairSenRange = lss->GetSimBoundary(str_Search,str_Similar);
+                        //取出相似句子保存
+                        for(int x=0; x<vec_PairSenRange.size(); x++)
                         {
-                            std::cout<<doc->GetDocID()<<"\t["<<sen.textRange.offset<<","<<sen.textRange.offset+sen.textRange.length<<"]"<<str_Search<<std::endl;
-                            std::cout<<docID<<"\t["<<begin<<","<<end<<"]"<<str_Similar<<std::endl;
-                            std::cout<<"similarity is "<<d_sim<<std::endl<<std::endl;
+                            PAIRSENRANGE pair_SenRange = vec_PairSenRange[x];
+                            //leakDoc
+                            Range range_SeachSen = pair_SenRange.first;
+                            int n_SearchSenBegin = sen.vec_splitedHits[range_SeachSen.begin].textRange.offset;//相似句子段在文章中的偏移值
+                            int n_SearchSenEnd = sen.vec_splitedHits[range_SeachSen.end].textRange.offset + sen.vec_splitedHits[range_SeachSen.end].textRange.length;
+                            TextRange textrange_SearchDoc = {n_SearchSenBegin, n_SearchSenEnd - n_SearchSenBegin};//范围
+                            std::string str_Search = doc->GetstrContents().substr(n_SearchSenBegin,n_SearchSenEnd-n_SearchSenBegin);
+                            // db doc
+                            Range range_SimSen = pair_SenRange.second;
+                            DOC_ID docID_DB = docID;
+                            int n_SimWordNoBegin = range_Sim.begin + range_SimSen.begin;//相似句子段在文章中的编号
+                            int n_SimWordNoEnd = range_Sim.begin + range_SimSen.end;
+                            int n_SimSenBegin = map_NoPositionInDoc[n_SimWordNoBegin].begin;//相似句子段在文章中的偏移值
+                            int n_SimSenEnd = map_NoPositionInDoc[n_SimWordNoEnd].end;
+                            TextRange textrange_SimDoc = {n_SimSenBegin, n_SimSenEnd - n_SimSenBegin};//范围
+                            std::string str_Similar = docDB->GetstrContents().substr(n_SimSenBegin,n_SimSenEnd - n_SimSenBegin);//原始句子
+
+                            double similarity = 0.0;//相似度
+
+                            SimilarDocRange similarDocRange;//相似文档的范围
+                            similarDocRange.str_Search = str_Search;
+                            similarDocRange.textrange_SearchDoc = textrange_SearchDoc;
+                            similarDocRange.docID_DB = docID_DB;
+                            similarDocRange.str_Similar = str_Similar;
+                            similarDocRange.textrange_SimilarDoc = textrange_SimDoc;
+                            similarDocRange.similarity = 0;
+                            vec_SimilarDocRange.push_back(similarDocRange);
                         }
                     }
                 }
             }
-            delete ss;
-            /*
-            //计算含有相同句子的相似度
-            for(int k=0; k<vec_DocSen.size(); k++)
-            {
-                std::string str1;
-                std::string str2;
-                double d_similarity = SentenceSimilarity::CalcSentenceSimilarity(str1,str2);
-                std::cout<<str1<<std::endl<<str2<<std::endl<<d_similarity<<std::endl;
-            }*/
+            delete lss;
         }
-
     }
+    return vec_SimilarDocRange;
 }
 
 DocumentDao::~DocumentDao()
