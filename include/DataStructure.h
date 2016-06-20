@@ -14,12 +14,13 @@ struct Range
     int end;
 };
 
-typedef std::pair<Range,int> DOCRANGETIMES;//存储文档中词语的位置范围信息
+typedef std::pair<Range,int> PAIRDOCRANGETIMES;//存储文档中词语的位置范围信息
+typedef std::pair<std::string,DOC_ID> PAIRWORDDOCID;//存储文档中词语的位置范围信息
 
 const int HAMMINGDIST = 3;
 const int SIMHASHBITS = 64;
 
-const int KGRAM = 6;
+const int KGRAM = 4;
 const int SIMILARRANGE = 3;
 const int SIMHASHKGRAM = 2;
 const int BASE = 12;

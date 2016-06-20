@@ -5,7 +5,7 @@ RangeUtil::RangeUtil()
     //ctor
 }
 
-void RangeUtil::MergeRangeToVector(std::vector<DOCRANGETIMES>& vec_DocRangeTimes,DOCRANGETIMES& docRangeTimes)
+void RangeUtil::MergeRangeToVector(std::vector<PAIRDOCRANGETIMES>& vec_DocRangeTimes,PAIRDOCRANGETIMES& docRangeTimes)
 {
     bool b_MergeRange = false;
     Range range = docRangeTimes.first;
@@ -15,7 +15,7 @@ void RangeUtil::MergeRangeToVector(std::vector<DOCRANGETIMES>& vec_DocRangeTimes
     //遍历已保存的所有位置
     for(int i=0; i < vec_DocRangeTimes.size(); i++)
     {
-        DOCRANGETIMES docRangeTimes2 = vec_DocRangeTimes[i];
+        PAIRDOCRANGETIMES docRangeTimes2 = vec_DocRangeTimes[i];
         Range range2 = docRangeTimes2.first;
         int times2 = docRangeTimes2.second;
         //std::cout<<"["<<range2.begin<<","<<range2.end<<"]\t"<<times2<<"\t"<<std::endl;

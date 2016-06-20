@@ -43,7 +43,7 @@ class Document
         std::map<std::string, WordIndex*> GetMapWordIndex() const { return m_mapWordIndex; }
 
         void CalcDocSimHash();
-        void SplitSentencesToKGrams();
+        //void SplitSentencesToKGrams();
         void BuildInvertedIndex();
         void Display() const;
 

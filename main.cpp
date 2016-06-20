@@ -34,7 +34,7 @@ int main()
 
     //DocumentOperation::AddDocument("./in/utf_23.txt");
     std::string str_InputDir = "./in/";
-    DocumentOperation::AddDirectoryDocuments(str_InputDir);
+    //DocumentOperation::AddDirectoryDocuments(str_InputDir);
 
     //查询数据泄露
     std::string str_LeakDoc = "./test/leak.txt";

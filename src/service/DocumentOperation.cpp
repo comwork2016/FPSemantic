@@ -92,7 +92,7 @@ int DocumentOperation::SearchLeak(const std::string& str_DocPath)
     nlpirUtil->SplitDocument(doc);
     delete nlpirUtil;
     doc->CalcDocSimHash();
-    doc->SplitSentencesToKGrams();
+    //doc->SplitSentencesToKGrams();
     //doc->Display();
     //与数据库中的文件SimHash比较,如果不相同,再通过文档指纹查询泄露信息
     DocumentDao* docDao = new DocumentDao();
