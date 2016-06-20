@@ -10,7 +10,7 @@ class RangeUtil
         RangeUtil();
         virtual ~RangeUtil();
 
-        static void MergeRangeToVector(std::vector<PAIRDOCRANGETIMES>& vec_DocRangeTimes,PAIRDOCRANGETIMES& docRangeTimes);
+        static bool MergeRangeToVector(std::vector<PAIRDOCRANGETIMES>& vec_DocRangeTimes,PAIRDOCRANGETIMES& docRangeTimes);
 
     protected:
     private:

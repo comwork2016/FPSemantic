@@ -5,7 +5,12 @@ RangeUtil::RangeUtil()
     //ctor
 }
 
-void RangeUtil::MergeRangeToVector(std::vector<PAIRDOCRANGETIMES>& vec_DocRangeTimes,PAIRDOCRANGETIMES& docRangeTimes)
+/**
+    是否可以合并到集合中去
+    如果可以，合并后的值保存到docRangeTimes中，并修改vector中的范围，返回true
+    如果不能，则添加至结尾
+*/
+bool RangeUtil::MergeRangeToVector(std::vector<PAIRDOCRANGETIMES>& vec_DocRangeTimes,PAIRDOCRANGETIMES& docRangeTimes)
 {
     bool b_MergeRange = false;
     Range range = docRangeTimes.first;
@@ -53,16 +58,14 @@ void RangeUtil::MergeRangeToVector(std::vector<PAIRDOCRANGETIMES>& vec_DocRangeT
             docRangeTimes.second = times;
             //删除旧集合中的元素
             vec_DocRangeTimes.erase(vec_DocRangeTimes.begin()+i);
-            //继续往前合并
-            MergeRangeToVector(vec_DocRangeTimes,docRangeTimes);
-            break;
+            return true;
         }
     }
     if(!b_MergeRange)//范围位置偏差太大，则新建一个位置存放词语信息
     {
         vec_DocRangeTimes.push_back(docRangeTimes);
     }
-    //std::cin.get();
+    return b_MergeRange;
 }
 
 RangeUtil::~RangeUtil()

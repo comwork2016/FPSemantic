@@ -298,7 +298,7 @@ void DocumentDao::GetSentenceSimilarDocument(const Document* doc)
                         else
                         {
                             std::vector<PAIRDOCRANGETIMES> vec_WordDocRangeTimes = map_WordInDocRangeVector[docID];//某个文档已保存的位置向量
-                            RangeUtil::MergeRangeToVector(vec_WordDocRangeTimes,wordDocRangeTimes);
+                            while(RangeUtil::MergeRangeToVector(vec_WordDocRangeTimes,wordDocRangeTimes));//一直往下合并
                             map_WordInDocRangeVector[docID] = vec_WordDocRangeTimes;
                         }
                     }
@@ -318,7 +318,7 @@ void DocumentDao::GetSentenceSimilarDocument(const Document* doc)
                         else
                         {
                             std::vector<PAIRDOCRANGETIMES> vec_DocRangeTimes = map_DocRangeVector[docID];//某个文档已保存的位置向量
-                            RangeUtil::MergeRangeToVector(vec_DocRangeTimes,pair_DocRangeTimes);
+                            while(RangeUtil::MergeRangeToVector(vec_DocRangeTimes,pair_DocRangeTimes));
                             map_DocRangeVector[docID] = vec_DocRangeTimes;
                             //std::cin.get();
                         }
