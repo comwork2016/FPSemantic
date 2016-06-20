@@ -92,7 +92,7 @@ int DocumentOperation::SearchLeak(const std::string& str_DocPath)
     nlpirUtil->SplitDocument(doc);
     delete nlpirUtil;
     doc->CalcDocSimHash();
-    doc->SplitSentencesToKGrams();
+    //doc->SplitSentencesToKGrams();
     //doc->Display();
     //与数据库中的文件SimHash比较,如果不相同,再通过文档指纹查询泄露信息
     DocumentDao* docDao = new DocumentDao();
@@ -100,7 +100,18 @@ int DocumentOperation::SearchLeak(const std::string& str_DocPath)
     if(str_SimilarDoc=="")
     {
         //查询相同的指纹
-        docDao->GetSentenceSimilarDocument(doc);
+        std::vector<SimilarDocRange> vec_SimilarDocRange = docDao->GetSentenceSimilarDocument(doc);
+        for(int i=0; i<vec_SimilarDocRange.size(); i++)
+        {
+            SimilarDocRange similarDocRange = vec_SimilarDocRange[i];
+            std::cout<<"*************************************************************************************************"<<std::endl;
+            std::cout<<"["<<similarDocRange.textrange_SearchDoc.offset<<","<<similarDocRange.textrange_SearchDoc.length<<"]"<<std::endl;
+            std::cout<<similarDocRange.str_Search<<std::endl<<std::endl<<std::endl;
+
+            std::cout<<similarDocRange.docID_DB<<"\t["<<similarDocRange.textrange_SimilarDoc.offset<<","<<similarDocRange.textrange_SimilarDoc.length<<"]"<<std::endl;
+            std::cout<<similarDocRange.str_Similar<<std::endl;
+            std::cout<<"similarity is "<<similarDocRange.similarity<<std::endl;
+        }
         /*遍历输出相同指纹*/
         /*for(int i=0; i<vec_SimilarDocument.size(); i++)
         {

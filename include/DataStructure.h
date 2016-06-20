@@ -14,12 +14,14 @@ struct Range
     int end;
 };
 
-typedef std::pair<Range,int> DOCRANGETIMES;//存储文档中词语的位置范围信息
+typedef std::pair<Range,int> PAIRDOCRANGETIMES;//存储文档中词语的位置范围信息
+typedef std::pair<int,int> PAIRSIMWORDNO;//存储文档中词语的位置范围信息
+typedef std::pair<Range,Range> PAIRSENRANGE;
 
 const int HAMMINGDIST = 3;
 const int SIMHASHBITS = 64;
 
-const int KGRAM = 6;
+const int KGRAM = 4;
 const int SIMILARRANGE = 3;
 const int SIMHASHKGRAM = 2;
 const int BASE = 12;
@@ -90,6 +92,16 @@ struct WordPos
 {
     int wordPos;
     int NoInDoc;
+};
+
+struct SimilarDocRange
+{
+    TextRange textrange_SearchDoc;
+    std::string str_Search;//原始句子
+    DOC_ID docID_DB;
+    TextRange textrange_SimilarDoc;
+    std::string str_Similar;//相似句子
+    double similarity;//相似度
 };
 
 #endif // CONSTANTS_H_INCLUDED

@@ -4,8 +4,7 @@
 #include "mongo/client/dbclient.h"
 #include "../content/Document.h"
 #include "../content/WordIndexRecord.h"
-
-#include "SentenceSimilarity.h"
+#include "LongestSimilarSentence.h"
 #include "RangeUtil.h"
 
 class DocumentDao
@@ -17,7 +16,7 @@ class DocumentDao
         int InsertDocuments(std::vector<Document*> vec_doc);
         int DeleteAll();
         std::string QuerySIMSimilarity(const Document* doc);
-        void GetSentenceSimilarDocument(const Document* doc);
+        std::vector<SimilarDocRange> GetSentenceSimilarDocument(const Document* doc);
 
     protected:
         std::map<DOC_ID,WordIndexRecord*> QueryIndexOfWord(const std::string& str_Word);

@@ -204,7 +204,7 @@ void Document::CalcDocSimHash()
 
 /**
     将句子分成词语块，便于小粒度查找泄露文档
-*/
+*//*
 void Document::SplitSentencesToKGrams()
 {
     for(int i=0; i<this->m_vecParagraph.size(); i++)
@@ -231,7 +231,7 @@ void Document::SplitSentencesToKGrams()
             }
         }
     }
-}
+}*/
 
 /**
     构造倒排索引
