@@ -374,7 +374,8 @@ std::vector<SimilarDocRange> DocumentDao::GetSentenceSimilarDocument(const Docum
                         std::string str_Similar = docDB->GetstrContents().substr(n_SimDocBegin,n_SimDocEnd-n_SimDocBegin);
                         //std::cout<<str_Search<<std::endl;
                         //std::cout<<str_Similar<<std::endl;
-                        std::vector<PAIRSENRANGE> vec_PairSenRange = lss->GetSimBoundary(str_Search,str_Similar);
+                        std::vector<PAIRSENRANGE> vec_PairSenRange;
+                        double d_similarity = lss->GetSimBoundary(str_Search,str_Similar,vec_PairSenRange);
                         //取出相似句子保存
                         for(int x=0; x<vec_PairSenRange.size(); x++)
                         {
@@ -395,15 +396,13 @@ std::vector<SimilarDocRange> DocumentDao::GetSentenceSimilarDocument(const Docum
                             TextRange textrange_SimDoc = {n_SimSenBegin, n_SimSenEnd - n_SimSenBegin};//范围
                             std::string str_Similar = docDB->GetstrContents().substr(n_SimSenBegin,n_SimSenEnd - n_SimSenBegin);//原始句子
 
-                            double similarity = 0.0;//相似度
-
                             SimilarDocRange similarDocRange;//相似文档的范围
                             similarDocRange.str_Search = str_Search;
                             similarDocRange.textrange_SearchDoc = textrange_SearchDoc;
                             similarDocRange.docID_DB = docID_DB;
                             similarDocRange.str_Similar = str_Similar;
                             similarDocRange.textrange_SimilarDoc = textrange_SimDoc;
-                            similarDocRange.similarity = 0;
+                            similarDocRange.similarity = d_similarity;
                             vec_SimilarDocRange.push_back(similarDocRange);
                         }
                     }

@@ -6,7 +6,7 @@ LongestSimilarSentence::LongestSimilarSentence()
     glossaryDao = new GlossaryDao();
 }
 
-std::vector<PAIRSENRANGE> LongestSimilarSentence::GetSimBoundary(const std::string str_Sen1,const std::string str_Sen2)
+double LongestSimilarSentence::GetSimBoundary(const std::string str_Sen1,const std::string str_Sen2,std::vector<PAIRSENRANGE>& vec_PairSenRange)
 {
     //如果两个句子的长度相差一杯，一般是不相似的
     int len1 = str_Sen1.length();
@@ -16,7 +16,6 @@ std::vector<PAIRSENRANGE> LongestSimilarSentence::GetSimBoundary(const std::stri
     vec_Word1 = nlpirUtil->SplitStringToWords(str_Sen1);
     vec_Word2 = nlpirUtil->SplitStringToWords(str_Sen2);
     delete nlpirUtil;
-
     //便利所有词语，提取词语概念
     std::vector<std::string> vec_StrWord1;
     std::vector<std::string> vec_StrWord2;
@@ -41,16 +40,16 @@ std::vector<PAIRSENRANGE> LongestSimilarSentence::GetSimBoundary(const std::stri
             map_WordConceptsVector[str_Word] = vec2;
         }
     }
-
-    std::vector<PAIRSIMWORDNO> vec_SimWordNo = CalcVectorSimilarity(vec_StrWord1,vec_StrWord2,map_WordConceptsVector);
-    std::vector<PAIRSENRANGE> vec_PairSenRange = RangeUtil::MergeRangeInSentence(vec_SimWordNo);
-    return vec_PairSenRange;
+    std::vector<PAIRSIMWORDNO> vec_SimWordNo;
+    double d_sim = CalcVectorSimilarity(vec_StrWord1,vec_StrWord2,map_WordConceptsVector,vec_SimWordNo);
+    vec_PairSenRange = RangeUtil::MergeRangeInSentence(vec_SimWordNo);
+    return d_sim;
 }
 
 /**
     计算两个集合中词语的平均相似度
 */
-std::vector<PAIRSIMWORDNO> LongestSimilarSentence::CalcVectorSimilarity(std::vector<std::string>& vec1,std::vector<std::string>& vec2, std::map<std::string,std::vector<std::string> >& map_WordConceptsVector)
+double LongestSimilarSentence::CalcVectorSimilarity(std::vector<std::string>& vec1,std::vector<std::string>& vec2, std::map<std::string,std::vector<std::string> >& map_WordConceptsVector,std::vector<PAIRSIMWORDNO>& vec_SimWordNo)
 {
     std::vector<double> vec_maxsim;
     int len1=vec1.size();
@@ -95,12 +94,9 @@ std::vector<PAIRSIMWORDNO> LongestSimilarSentence::CalcVectorSimilarity(std::vec
                     }
                 }
             }
-            //std::cout<<matrix[i][j]<<"\t";
         }
-        //std::cout<<std::endl;
     }
     //查找矩阵中最大相似度最大的词语对，加入相似度向量中
-    std::vector<PAIRSIMWORDNO> vec_SimWordNo;
     int num = 0;
     while(num<len1 && num <len2)
     {
@@ -142,7 +138,13 @@ std::vector<PAIRSIMWORDNO> LongestSimilarSentence::CalcVectorSimilarity(std::vec
         delete[] matrix[i];
     }
     delete[] matrix;
-    return vec_SimWordNo;
+    //计算相似度
+    double sim_sum = 0;
+    for(int i=0;i<vec_maxsim.size();i++)
+    {
+        sim_sum += vec_maxsim[i];
+    }
+    return sim_sum/vec_maxsim.size();
 }
 
 LongestSimilarSentence::~LongestSimilarSentence()
