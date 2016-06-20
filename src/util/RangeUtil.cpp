@@ -111,7 +111,7 @@ std::vector<PAIRSENRANGE> RangeUtil::MergeRangeInSentence(std::vector<PAIRSIMWOR
                 if(n_Merge1 < n_Merge2) //如果n_Merge1小，则从n_Merge1 + 1处继续查找
                 {
                     n_Merge1 = MergeRangeToVector(vec_DocRangeTimes1,docRangeTimes1,n_Merge1+1);
-                    n_Merge2 = MergeRangeToVector(vec_DocRangeTimes1,docRangeTimes1,n_Merge2);
+                    n_Merge2 = MergeRangeToVector(vec_DocRangeTimes2,docRangeTimes2,n_Merge2);
                 }
                 else
                 {
