@@ -112,34 +112,6 @@ int DocumentOperation::SearchLeak(const std::string& str_DocPath)
             std::cout<<similarDocRange.str_Similar<<std::endl;
             std::cout<<"similarity is "<<similarDocRange.similarity<<std::endl;
         }
-        /*遍历输出相同指纹*/
-        /*for(int i=0; i<vec_SimilarDocument.size(); i++)
-        {
-            FingerPrintsSimilarDocument similarDoc = vec_SimilarDocument[i];
-            const char* pch_DocPath = doc->GetstrDocPath().c_str();
-            const char* pch_SimDocPath = similarDoc.str_DBDoc.c_str();
-            std::cout<<std::endl<<std::endl<<"*************************************************************************************************"<<std::endl;
-            std::cout<<"similarity between "<<pch_DocPath<<" and "<<pch_SimDocPath<<" is "<<100*similarDoc.f_similarity<<"%"<<std::endl;
-            std::cout<<"*************************************************************************************************"<<std::endl;
-            int n_SameSize = similarDoc.vec_SearchDocSimilarTextRange.size();
-            for(int j=0; j<n_SameSize; j++)
-            {
-                std::cout<<"==============================="<<std::endl;
-                TextRange textrange_SearchDoc = similarDoc.vec_SearchDocSimilarTextRange[j]; //待比对文档中相同的hash
-                TextRange textrange_DBDoc = similarDoc.vec_DBDocSimilarTextRange[j]; //数据库中文档的相同的hash;
-                // 搜索文档的内容和位置
-                int n_OriginLength = textrange_SearchDoc.offset_end - textrange_SearchDoc.offset_begin;
-                std::string str_OriginWord = doc->GetstrContents().substr(textrange_SearchDoc.offset_begin, n_OriginLength);
-                std::cout<<"["<<textrange_SearchDoc.offset_begin<<","<<textrange_SearchDoc.offset_end<<","<<n_OriginLength<<"]"<<std::endl;
-                std::cout<<str_OriginWord<<std::endl<<std::endl;
-                //数据库中文档的内容和位置
-                Document* docDB = new Document(similarDoc.str_DBDoc);// 数据库中的文档信息
-                int n_DBLength = textrange_DBDoc.offset_end - textrange_DBDoc.offset_begin;
-                std::string str_DBWord = docDB->GetstrContents().substr(textrange_DBDoc.offset_begin, n_DBLength);
-                std::cout<<"["<<textrange_DBDoc.offset_begin<<","<<textrange_DBDoc.offset_end<<","<<n_DBLength<<"]"<<std::endl;
-                std::cout<<str_DBWord<<std::endl;
-            }
-        }*/
     }
     else
     {

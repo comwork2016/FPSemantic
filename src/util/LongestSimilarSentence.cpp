@@ -65,9 +65,11 @@ double LongestSimilarSentence::CalcVectorSimilarity(std::vector<std::string>& ve
     //计算矩阵中的词语相似度
     for(int i=0; i<len1; i++)
     {
-        //std::cout<<vec1[i]<<"\t";
+        //std::cout<<vec1[i];
+        //std::cout<<std::endl;
         for(int j=0; j<len2; j++)
         {
+            //std::cout<<vec2[j]<<"\t";
             if(vec1[i] == vec2[j])
             {
                 matrix[i][j] = 1;
@@ -94,6 +96,7 @@ double LongestSimilarSentence::CalcVectorSimilarity(std::vector<std::string>& ve
                     }
                 }
             }
+            //std::cout<<matrix[i][j]<<"\t";
         }
     }
     //查找矩阵中最大相似度最大的词语对，加入相似度向量中

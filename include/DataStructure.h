@@ -21,7 +21,7 @@ typedef std::pair<Range,Range> PAIRSENRANGE;
 const int HAMMINGDIST = 3;
 const int SIMHASHBITS = 64;
 
-const int KGRAM = 4;
+const int KGRAM = 6;
 const int SIMILARRANGE = 3;
 const int SIMHASHKGRAM = 2;
 const int BASE = 12;

@@ -49,7 +49,6 @@ Document::Document(const std::string& str_DocPath,bool b_SplitToSentence)
     }
     else
     {
-
         //读取文档内容
         int n_ReadStats = ReadDocumentAndSplitToSentence();
         if(n_ReadStats == ERROR_OPENFILE)
