@@ -71,6 +71,7 @@ std::vector<PAIRSENRANGE> RangeUtil::MergeRangeInSentence(std::vector<PAIRSIMWOR
     for(int i=0; i<vec_SimWordNo.size(); i++)
     {
         PAIRSIMWORDNO pair_SimWordNo = vec_SimWordNo[i];
+        //std::cout<<pair_SimWordNo.first<<","<<pair_SimWordNo.second<<std::endl;
         Range range1,range2;
         range1.begin = pair_SimWordNo.first;
         range1.end = pair_SimWordNo.first;
