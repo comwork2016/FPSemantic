@@ -4,6 +4,7 @@
 #include "DataStructure.h"
 #include <iostream>
 #include "DataStructure.h"
+#include <map>
 
 class RangeUtil
 {
@@ -11,8 +12,8 @@ class RangeUtil
         RangeUtil();
         virtual ~RangeUtil();
 
-        static int MergeRangeToVector(std::vector<PAIRDOCRANGETIMES>& vec_DocRangeTimes,PAIRDOCRANGETIMES& docRangeTimes,int indexBegin = 0);
-        static std::vector<PAIRSENRANGE> MergeRangeInSentence(std::vector<PAIRSIMWORDNO>& vec_SimWordNo);
+        static int MergeRangeToVector(std::vector<PairRangeTimes>& vec_DocRangeTimes,PairRangeTimes& docRangeTimes,int indexBegin = 0);
+        static std::vector<PairSenRange> MergeRangeInSentence(std::vector<PairSimWordNo>& vec_SimWordNo);
 
     protected:
     private:

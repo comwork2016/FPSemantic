@@ -255,7 +255,7 @@ void Document::BuildInvertedIndex()
                 {
                     wordsIndex = this->m_mapWordIndex[sh.word];
                 }
-                WordPos wordPos = {sh.textRange.offset,sh.NoInDoc,sen.textRange.offset};
+                WordPos wordPos = {sh.textRange.offset,sh.NoInDoc,para.textRange.offset};
                 wordsIndex->AddDocPosInfo(this->m_strDocPath,wordPos);
                 this->m_mapWordIndex[sh.word] = wordsIndex;
             }

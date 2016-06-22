@@ -14,10 +14,10 @@ struct Range
     int end;
 };
 
-typedef std::pair<Range,int> PAIRDOCRANGETIMES;//存储文档中词语的位置范围信息
-typedef std::pair<int,int> PAIRSIMWORDNO;//存储文档中词语的位置范围信息
-typedef std::pair<Range,Range> PAIRSENRANGE;//存储两个相似句子的范围
-typedef std::pair<DOC_ID,int> PAIRDOCIDSENPOS;//存储文档ID和句子位置
+typedef std::pair<Range,int> PairRangeTimes;//存储文档中词语的位置范围信息
+typedef std::pair<int,int> PairSimWordNo;//存储文档中相似词语的编号对信息
+typedef std::pair<Range,Range> PairSenRange;//存储两个相似句子的范围
+typedef std::pair<DOC_ID,int> PairDocIDParaPos;//存储文档ID和句子位置
 
 const int HAMMINGDIST = 3;
 const int SIMHASHBITS = 64;
@@ -93,7 +93,7 @@ struct WordPos
 {
     int wordPos;//单词的偏移值
     int NoInDoc;//单词在文章中的编号
-    int senPos;//单词所属句子的偏移值
+    int paraPos;//单词所属段落的偏移值
 };
 
 struct SimilarDocRange

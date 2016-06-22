@@ -5,7 +5,10 @@ RangeUtil::RangeUtil()
     //ctor
 }
 
-int RangeUtil::MergeRangeToVector(std::vector<PAIRDOCRANGETIMES>& vec_DocRangeTimes,PAIRDOCRANGETIMES& docRangeTimes,int indexBegin)
+/**
+    合并位置范围到向量中
+*/
+int RangeUtil::MergeRangeToVector(std::vector<PairRangeTimes>& vec_DocRangeTimes,PairRangeTimes& docRangeTimes,int indexBegin)
 {
     int n_Merge = -1;
     bool b_MergeRange = false;
@@ -16,7 +19,7 @@ int RangeUtil::MergeRangeToVector(std::vector<PAIRDOCRANGETIMES>& vec_DocRangeTi
     //遍历已保存的所有位置
     for(int i=indexBegin; i < vec_DocRangeTimes.size(); i++)
     {
-        PAIRDOCRANGETIMES docRangeTimes2 = vec_DocRangeTimes[i];
+        PairRangeTimes docRangeTimes2 = vec_DocRangeTimes[i];
         Range range2 = docRangeTimes2.first;
         int times2 = docRangeTimes2.second;
         //std::cout<<"["<<range2.begin<<","<<range2.end<<"]\t"<<times2<<"\t"<<std::endl;
@@ -65,24 +68,27 @@ int RangeUtil::MergeRangeToVector(std::vector<PAIRDOCRANGETIMES>& vec_DocRangeTi
     return n_Merge;
 }
 
-std::vector<PAIRSENRANGE> RangeUtil::MergeRangeInSentence(std::vector<PAIRSIMWORDNO>& vec_SimWordNo)
+/**
+    合并两个句子中相似的范围
+*/
+std::vector<PairSenRange> RangeUtil::MergeRangeInSentence(std::vector<PairSimWordNo>& vec_SimWordNo)
 {
-    std::vector<PAIRDOCRANGETIMES> vec_DocRangeTimes1,vec_DocRangeTimes2;
+    std::vector<PairRangeTimes> vec_DocRangeTimes1,vec_DocRangeTimes2;
     for(int i=0; i<vec_SimWordNo.size(); i++)
     {
-        PAIRSIMWORDNO pair_SimWordNo = vec_SimWordNo[i];
+        PairSimWordNo pair_SimWordNo = vec_SimWordNo[i];
         //std::cout<<pair_SimWordNo.first<<","<<pair_SimWordNo.second<<std::endl;
         Range range1,range2;
         range1.begin = pair_SimWordNo.first;
         range1.end = pair_SimWordNo.first;
-        PAIRDOCRANGETIMES docRangeTimes1(range1,1);
+        PairRangeTimes docRangeTimes1(range1,1);
         range2.begin = pair_SimWordNo.second;
         range2.end = pair_SimWordNo.second;
-        PAIRDOCRANGETIMES docRangeTimes2(range2,1);
-        std::vector<PAIRDOCRANGETIMES> vec_TmpDocRangeTimes1 = vec_DocRangeTimes1;//副本
-        std::vector<PAIRDOCRANGETIMES> vec_TmpDocRangeTimes2 = vec_DocRangeTimes2;
-        PAIRDOCRANGETIMES tmp_docRangeTimes1 = docRangeTimes1;
-        PAIRDOCRANGETIMES tmp_docRangeTimes2 = docRangeTimes2;
+        PairRangeTimes docRangeTimes2(range2,1);
+        std::vector<PairRangeTimes> vec_TmpDocRangeTimes1 = vec_DocRangeTimes1;//副本
+        std::vector<PairRangeTimes> vec_TmpDocRangeTimes2 = vec_DocRangeTimes2;
+        PairRangeTimes tmp_docRangeTimes1 = docRangeTimes1;
+        PairRangeTimes tmp_docRangeTimes2 = docRangeTimes2;
         int n_Merge1 = MergeRangeToVector(vec_DocRangeTimes1,docRangeTimes1);
         int n_Merge2 = MergeRangeToVector(vec_DocRangeTimes2,docRangeTimes2);
         /*
@@ -129,16 +135,16 @@ std::vector<PAIRSENRANGE> RangeUtil::MergeRangeInSentence(std::vector<PAIRSIMWOR
             vec_DocRangeTimes2.push_back(tmp_docRangeTimes2);
         }
     }
-    std::vector<PAIRSENRANGE> vec_PairSenRange;
+    std::vector<PairSenRange> vec_PairSenRange;
     for(int m=0; m<vec_DocRangeTimes1.size(); m++)
     {
-        PAIRDOCRANGETIMES docRangeTimes1 = vec_DocRangeTimes1[m];
-        PAIRDOCRANGETIMES docRangeTimes2 = vec_DocRangeTimes2[m];
+        PairRangeTimes docRangeTimes1 = vec_DocRangeTimes1[m];
+        PairRangeTimes docRangeTimes2 = vec_DocRangeTimes2[m];
         if(docRangeTimes1.second >= KGRAM && docRangeTimes2.second >= KGRAM)
         {
             Range range1 = docRangeTimes1.first;
             Range range2 = docRangeTimes2.first;
-            PAIRSENRANGE pair_Range(range1,range2);
+            PairSenRange pair_Range(range1,range2);
             vec_PairSenRange.push_back(pair_Range);
             //std::cout<<"["<<range1.begin<<","<<range1.end<<"]"<<docRangeTimes1.second<<"------["<<range2.begin<<","<<range2.end<<"]"<<docRangeTimes2.second<<std::endl;
         }
