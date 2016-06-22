@@ -269,10 +269,21 @@ std::vector<SimilarDocRange> DocumentDao::GetSentenceSimilarDocument(const Docum
             std::string str_Search = doc->GetstrContents().substr(sen.textRange.offset,sen.textRange.length);
             //每一遍，统计文档和文档句子出现的次数
             std::map<DOC_ID,int> map_DocOcurCount;
+            std::set<std::string> set_Words;//一个句子中的词语只算作一次
             std::vector<std::map<DOC_ID,WordIndexRecord*> > vec_AllWordIndex;//所有词语的索引值，避免频繁查库
             for(int k=0; k<sen.vec_splitedHits.size(); k++)
             {
+                /*char ch_pos = sen.vec_splitedHits[k].POS[0];
+                if(ch_pos != 'n' && ch_pos !='m' && ch_pos != 't')
+                {
+                    continue;
+                }*/
                 std::string str_Word = sen.vec_splitedHits[k].word;
+                if(set_Words.find(str_Word)!= set_Words.end())
+                {
+                    continue;
+                }
+                set_Words.insert(str_Word);
                 std::map<DOC_ID,WordIndexRecord*> map_WordDocIndexRecord = QueryIndexOfWord(str_Word);//单词索引的文档信息
                 vec_AllWordIndex.push_back(map_WordDocIndexRecord);
                 //遍历索引信息，统计文档句子出现的位置，能有效减少合并范围的个数
