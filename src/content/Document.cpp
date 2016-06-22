@@ -239,13 +239,13 @@ void Document::BuildInvertedIndex()
 {
     for(int i=0; i<this->m_vecParagraph.size(); i++)
     {
-        Paragraph& para = this->m_vecParagraph[i];
+        Paragraph para = this->m_vecParagraph[i];
         for(int j=0; j<para.vec_Sentences.size(); j++)
         {
-            Sentence& sen = para.vec_Sentences[j];
+            Sentence sen = para.vec_Sentences[j];
             for(int k=0; k<sen.vec_splitedHits.size(); k++)
             {
-                SplitedHits& sh = sen.vec_splitedHits[k];
+                SplitedHits sh = sen.vec_splitedHits[k];
                 WordIndex* wordsIndex;
                 if(this->m_mapWordIndex.find(sh.word)==this->m_mapWordIndex.end())//文档中第一次出现该单词
                 {
@@ -255,7 +255,7 @@ void Document::BuildInvertedIndex()
                 {
                     wordsIndex = this->m_mapWordIndex[sh.word];
                 }
-                WordPos wordPos = {sh.textRange.offset,sh.NoInDoc};
+                WordPos wordPos = {sh.textRange.offset,sh.NoInDoc,sen.textRange.offset};
                 wordsIndex->AddDocPosInfo(this->m_strDocPath,wordPos);
                 this->m_mapWordIndex[sh.word] = wordsIndex;
             }
@@ -287,7 +287,7 @@ void Document::Display() const
                 //std::cout<<sh.word<<"/"<<sh.pos<<"\t";
             }
             std::cout<<std::endl<<std::endl;
-            for(int k=0; k<sen.vec_KGram.size(); k++)
+            /*for(int k=0; k<sen.vec_KGram.size(); k++)
             {
                 KGram kgram = sen.vec_KGram[k];
                 std::cout<<kgram.textRange.offset<<","<<kgram.textRange.offset + kgram.textRange.length<<"\t"<<std::endl;
@@ -297,17 +297,17 @@ void Document::Display() const
                     std::cout<<sh.word<<"\t";
                 }
                 std::cout<<std::endl;
-            }
+            }*/
         }
     }
-    /*查看倒排索引信息
+    /*查看倒排索引信息*/
     std::map<std::string,WordIndex*> map_WordIndex = this->m_mapWordIndex;
     for(std::map<std::string,WordIndex*>::iterator it = map_WordIndex.begin(); it != map_WordIndex.end(); it++)
     {
         WordIndex* wordIndex = it->second;
         wordIndex->Display();
         std::cout<<std::endl;
-    }*/
+    }
     std::cout<<this->m_lSimHash<<std::endl;
 }
 

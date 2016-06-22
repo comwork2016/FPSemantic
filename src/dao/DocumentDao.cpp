@@ -35,7 +35,8 @@ std::map<DOC_ID,WordIndexRecord*> DocumentDao::QueryIndexOfWord(const std::strin
                 mongo::BSONObj bson_Pos = itr.next().Obj();
                 int n_WordPos = bson_Pos.getIntField("wordpos");
                 int n_NoInDoc = bson_Pos.getIntField("noindoc");
-                WordPos wordPos = {n_WordPos, n_NoInDoc};
+                int n_SenPos = bson_Pos.getIntField("senpos");
+                WordPos wordPos = {n_WordPos, n_NoInDoc,n_SenPos};
                 wordIndexRecord->AddPosInfo(wordPos);
             }
             map_WordIndexRecord[str_DocID] =wordIndexRecord;
@@ -78,6 +79,7 @@ int DocumentDao::InsertIndexes(std::map<std::string,WordIndex*> map_WordIndex)
                 mongo::BSONObjBuilder bb_pos;
                 bb_pos.append("wordpos",wordPos.wordPos);
                 bb_pos.append("noindoc",wordPos.NoInDoc);
+                bb_pos.append("senpos",wordPos.senPos);
                 bb_PosArray.append(bb_pos.obj());
             }
             bb_Record.append("poss",bb_PosArray.arr());
@@ -145,7 +147,6 @@ int DocumentDao::InsertDocument(Document* doc)
     }
     b.append("senpos",bb_Sens.obj());*/
     this->m_Conn.insert(this->m_DocDBName,b.obj());
-    std::cout<<doc->GetstrDocName() <<" inserted"<<std::endl;
     return 0;
 }
 
@@ -249,7 +250,7 @@ std::string DocumentDao::QuerySIMSimilarity(const Document* doc)
 }
 
 /**
-查询句子相似的文档
+    查询句子相似的文档
 */
 //std::vector<FingerPrintsSimilarDocument> DocumentDao::GetSentenceSimilarDocument(doc)
 std::vector<SimilarDocRange> DocumentDao::GetSentenceSimilarDocument(const Document* doc)
@@ -266,18 +267,19 @@ std::vector<SimilarDocRange> DocumentDao::GetSentenceSimilarDocument(const Docum
                 continue;
             }
             std::string str_Search = doc->GetstrContents().substr(sen.textRange.offset,sen.textRange.length);
+            //每一遍，统计文档和文档句子出现的次数
             std::map<DOC_ID,int> map_DocOcurCount;
-            //每一遍，统计文档出现的次数
-            std::vector<std::map<DOC_ID,WordIndexRecord*> > vec_AllWordIndex;
+            std::vector<std::map<DOC_ID,WordIndexRecord*> > vec_AllWordIndex;//所有词语的索引值，避免频繁查库
             for(int k=0; k<sen.vec_splitedHits.size(); k++)
             {
                 std::string str_Word = sen.vec_splitedHits[k].word;
                 std::map<DOC_ID,WordIndexRecord*> map_WordDocIndexRecord = QueryIndexOfWord(str_Word);//单词索引的文档信息
                 vec_AllWordIndex.push_back(map_WordDocIndexRecord);
-                //遍历索引信息，统计文档出现的位置，能有效减少合并范围的个数
+                //遍历索引信息，统计文档句子出现的位置，能有效减少合并范围的个数
                 for(std::map<DOC_ID,WordIndexRecord*>::iterator it = map_WordDocIndexRecord.begin(); it != map_WordDocIndexRecord.end(); it++)
                 {
                     DOC_ID docID = it->first;
+                    //更新文档出现的次数
                     if(map_DocOcurCount.find(docID) == map_DocOcurCount.end())
                     {
                         map_DocOcurCount[docID] = 1;
@@ -288,7 +290,39 @@ std::vector<SimilarDocRange> DocumentDao::GetSentenceSimilarDocument(const Docum
                     }
                 }
             }
-            //第二遍，统计相似
+            //第二遍，统计出现次数大于阈值的文档中句子的出现次数
+            std::map<PAIRDOCIDSENPOS,int> map_DocSenPosOcurCount;
+            for(int k=0; k<vec_AllWordIndex.size(); k++)
+            {
+                std::string str_Word = sen.vec_splitedHits[k].word;
+                std::map<DOC_ID,WordIndexRecord*> map_WordDocIndexRecord = vec_AllWordIndex[k];//单词索引的文档信息
+                //遍历索引信息，保存词语位置信息，并保存生成DOC_ID，位置的次数关系
+                for(std::map<DOC_ID,WordIndexRecord*>::iterator it = map_WordDocIndexRecord.begin(); it != map_WordDocIndexRecord.end(); it++)
+                {
+                    DOC_ID docID = it->first;
+                    if(map_DocOcurCount[docID] < KGRAM)//文档的出现次数小于阈值，跳过该文档，不予处理
+                    {
+                        continue;
+                    }
+                    //再统计文档中句子出现的次数
+                    WordIndexRecord* record = it->second;
+                    std::vector<WordPos> vec_WordPos = record->GetVecPos();
+                    for(int m=0; m<vec_WordPos.size(); m++)
+                    {
+                        WordPos wordPos = vec_WordPos[m];
+                        PAIRDOCIDSENPOS pair_DocIDSenPos(docID,wordPos.senPos);
+                        if(map_DocSenPosOcurCount.find(pair_DocIDSenPos) == map_DocSenPosOcurCount.end())
+                        {
+                            map_DocSenPosOcurCount[pair_DocIDSenPos] = 1;
+                        }
+                        else
+                        {
+                            map_DocSenPosOcurCount[pair_DocIDSenPos] = map_DocSenPosOcurCount[pair_DocIDSenPos]+1;
+                        }
+                    }
+                }
+            }
+            //第三遍，统计相似
             //记录词语位置信息，并合并文档中的位置信息
             std::map<DOC_ID,std::map<int,Range> > map_DocWordNoPosition;//保存所有词语的位置信息。
             std::map<DOC_ID,std::vector<PAIRDOCRANGETIMES> > map_DocRangeVector; //单词范围的统计信息
@@ -300,8 +334,7 @@ std::vector<SimilarDocRange> DocumentDao::GetSentenceSimilarDocument(const Docum
                 for(std::map<DOC_ID,WordIndexRecord*>::iterator it = map_WordDocIndexRecord.begin(); it != map_WordDocIndexRecord.end(); it++)
                 {
                     DOC_ID docID = it->first;
-                    //if(map_DocOcurCount[docID] < KGRAM)
-                    if(map_DocOcurCount[docID] < 0.5*sen.vec_splitedHits.size())
+                    if(map_DocOcurCount[docID] < KGRAM)//文档的出现次数小于阈值，跳过该文档，不予处理
                     {
                         continue;
                     }
@@ -313,6 +346,12 @@ std::vector<SimilarDocRange> DocumentDao::GetSentenceSimilarDocument(const Docum
                     for(int m=0; m<vec_WordPos.size(); m++)
                     {
                         WordPos wordPos = vec_WordPos[m];
+                        PAIRDOCIDSENPOS pair_DocIDSenPos(docID,wordPos.senPos);
+                        if(map_DocSenPosOcurCount[pair_DocIDSenPos] < KGRAM)
+                        {
+                            continue;
+                        }
+                        //std::cout<<pair_DocIDSenPos.first<<","<<pair_DocIDSenPos.second<<":"<<map_DocSenPosOcurCount[pair_DocIDSenPos]<<std::endl;
                         //保存词语的编号和位置的对应信息
                         Range posRange = {wordPos.wordPos, wordPos.wordPos+str_Word.length()};
                         map_NoPositionInDoc[wordPos.NoInDoc] = posRange;

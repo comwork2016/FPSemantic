@@ -16,7 +16,8 @@ struct Range
 
 typedef std::pair<Range,int> PAIRDOCRANGETIMES;//存储文档中词语的位置范围信息
 typedef std::pair<int,int> PAIRSIMWORDNO;//存储文档中词语的位置范围信息
-typedef std::pair<Range,Range> PAIRSENRANGE;
+typedef std::pair<Range,Range> PAIRSENRANGE;//存储两个相似句子的范围
+typedef std::pair<DOC_ID,int> PAIRDOCIDSENPOS;//存储文档ID和句子位置
 
 const int HAMMINGDIST = 3;
 const int SIMHASHBITS = 64;
@@ -90,8 +91,9 @@ struct Paragraph
 //定义结构体，存储单词在文章中的位置信息
 struct WordPos
 {
-    int wordPos;
-    int NoInDoc;
+    int wordPos;//单词的偏移值
+    int NoInDoc;//单词在文章中的编号
+    int senPos;//单词所属句子的偏移值
 };
 
 struct SimilarDocRange

@@ -58,6 +58,7 @@ int DocumentOperation::AddDirectoryDocuments(const std::string& str_InputDir)
         vec_Documents.push_back(doc);
         num++;
         //一次
+        //if(num%10==0)
         if(num%1000==0)
         {
             num=0;
