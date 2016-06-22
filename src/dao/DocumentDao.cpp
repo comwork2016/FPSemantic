@@ -311,6 +311,7 @@ std::vector<SimilarDocRange> DocumentDao::GetSentenceSimilarDocument(const Docum
                     //统计单词出现的段落和位置信息
                     std::vector<WordPos> vec_WordPos = record->GetVecPos();
                     //将段落中位置接近的词语看成是一个词语，并统计词语范围出现次数
+                    std::map<PairDocIDParaPos,std::vector<PairRangeTimes> > map_SingleWordInDocParaRangeTimesVector; //用于相同的词语合并位置
                     for(int m=0; m<vec_WordPos.size(); m++)
                     {
                         WordPos wordPos = vec_WordPos[m];
@@ -321,21 +322,45 @@ std::vector<SimilarDocRange> DocumentDao::GetSentenceSimilarDocument(const Docum
                         PairDocIDParaPos pair_DocIDParaPos(docID,wordPos.paraPos);
                         Range wordRange = {wordPos.NoInDoc,wordPos.NoInDoc};
                         PairRangeTimes wordRangeTimes(wordRange,1);
-                        if(map_DocParaRangeTimesVector.find(pair_DocIDParaPos) == map_DocParaRangeTimesVector.end())//文档的段落中没有出现过词语项
+                        if(map_SingleWordInDocParaRangeTimesVector.find(pair_DocIDParaPos) == map_SingleWordInDocParaRangeTimesVector.end())//文档的段落中没有出现过词语项
                         {
                             //添加到文档段落记录中去
                             std::vector<PairRangeTimes> vec_WordRangeTimes;
                             vec_WordRangeTimes.push_back(wordRangeTimes);
-                            map_DocParaRangeTimesVector[pair_DocIDParaPos] = vec_WordRangeTimes;
+                            map_SingleWordInDocParaRangeTimesVector[pair_DocIDParaPos] = vec_WordRangeTimes;
                         }
                         else
                         {
-                            std::vector<PairRangeTimes> vec_WordRangeTimes = map_DocParaRangeTimesVector[pair_DocIDParaPos];//某个文档段落已保存的位置向量
+                            std::vector<PairRangeTimes> vec_WordRangeTimes = map_SingleWordInDocParaRangeTimesVector[pair_DocIDParaPos];//某个文档段落已保存的位置向量
                             while(RangeUtil::MergeRangeToVector(vec_WordRangeTimes,wordRangeTimes)!=-1);//一直往下合并，临近位置的相同词语视为一个词语
-                            map_DocParaRangeTimesVector[pair_DocIDParaPos] = vec_WordRangeTimes;
+                            map_SingleWordInDocParaRangeTimesVector[pair_DocIDParaPos] = vec_WordRangeTimes;
                         }
                     }
-                    map_DocWordNoPosition[docID] = map_NoPositionInDoc;
+                    //遍历经过合并之后的每个词语的文档段落中位置信息
+                    for(std::map<PairDocIDParaPos,std::vector<PairRangeTimes> >::iterator itt = map_SingleWordInDocParaRangeTimesVector.begin(); itt != map_SingleWordInDocParaRangeTimesVector.end(); itt++)
+                    {
+                        PairDocIDParaPos pair_DocIDParaPos = itt->first;
+                        std::vector<PairRangeTimes> vec_SingleWordDocParaRangeTimes = itt->second;
+                        //将一个词语的合并位置计数为1，并添加到最终要合并的集合中进行合并。
+                        for(int n=0; n<vec_SingleWordDocParaRangeTimes.size(); n++)
+                        {
+                            PairRangeTimes pair_RangeTimes = vec_SingleWordDocParaRangeTimes[n];
+                            pair_RangeTimes.second = 1;//计数重置为1
+                            if(map_DocParaRangeTimesVector.find(pair_DocIDParaPos) == map_DocParaRangeTimesVector.end())
+                            {
+                                std::vector<PairRangeTimes> vec_RangeTimes;
+                                vec_RangeTimes.push_back(pair_RangeTimes);
+                                map_DocParaRangeTimesVector[pair_DocIDParaPos] = vec_RangeTimes;
+                            }
+                            else
+                            {
+                                std::vector<PairRangeTimes> vec_RangeTimes = map_DocParaRangeTimesVector[pair_DocIDParaPos];//某个文档已保存的位置向量
+                                while(RangeUtil::MergeRangeToVector(vec_RangeTimes,pair_RangeTimes)!=-1);
+                                map_DocParaRangeTimesVector[pair_DocIDParaPos] = vec_RangeTimes;
+                            }
+                        }
+                    }
+                    map_DocWordNoPosition[docID] = map_NoPositionInDoc;//保存每个文档中词语编号和位置的对应关系
                 }
             }
             //挑选出现次数大于阈值的短语范围
