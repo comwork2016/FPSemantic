@@ -101,17 +101,17 @@ int DocumentOperation::SearchLeak(const std::string& str_DocPath)
     if(str_SimilarDoc=="")
     {
         //查询相同的指纹
-        std::vector<SimilarDocRange> vec_SimilarDocRange = docDao->GetSentenceSimilarDocument(doc);
-        for(int i=0; i<vec_SimilarDocRange.size(); i++)
+        std::vector<SimilarDoc> vec_SimilarDoc = docDao->GetSentenceSimilarDocument(doc);
+        for(int i=0; i<vec_SimilarDoc.size(); i++)
         {
-            SimilarDocRange similarDocRange = vec_SimilarDocRange[i];
+            SimilarDoc similarDoc = vec_SimilarDoc[i];
             std::cout<<"*************************************************************************************************"<<std::endl;
-            std::cout<<"["<<similarDocRange.textrange_SearchDoc.offset<<","<<similarDocRange.textrange_SearchDoc.length<<"]"<<std::endl;
-            std::cout<<similarDocRange.str_Search<<std::endl<<std::endl<<std::endl;
+            std::cout<<"["<<similarDoc.textrange_SearchDoc.offset<<","<<similarDoc.textrange_SearchDoc.length<<"]"<<std::endl;
+            std::cout<<similarDoc.str_Search<<std::endl<<std::endl<<std::endl;
 
-            std::cout<<similarDocRange.docID_DB<<"\t["<<similarDocRange.textrange_SimilarDoc.offset<<","<<similarDocRange.textrange_SimilarDoc.length<<"]"<<std::endl;
-            std::cout<<similarDocRange.str_Similar<<std::endl;
-            std::cout<<"similarity is "<<similarDocRange.similarity<<std::endl;
+            std::cout<<similarDoc.docID_DB<<"\t["<<similarDoc.textrange_SimilarDoc.offset<<","<<similarDoc.textrange_SimilarDoc.length<<"]"<<std::endl;
+            std::cout<<similarDoc.str_Similar<<std::endl;
+            std::cout<<"similarity is "<<similarDoc.similarity<<std::endl;
         }
     }
     else

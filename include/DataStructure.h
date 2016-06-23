@@ -96,7 +96,7 @@ struct WordPos
     int paraPos;//单词所属段落的偏移值
 };
 
-struct SimilarDocRange
+struct SimilarDoc
 {
     TextRange textrange_SearchDoc;
     std::string str_Search;//原始句子

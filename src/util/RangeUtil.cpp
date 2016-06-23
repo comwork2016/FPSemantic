@@ -151,6 +151,31 @@ std::vector<PairSenRange> RangeUtil::MergeRangeInSentence(std::vector<PairSimWor
     }
     return vec_PairSenRange;
 }
+void RangeUtil::MergeLongestSimilarSentence(std::vector<SimilarDoc>& vec_SimilarDocForSen, SimilarDoc& similarDoc)
+{
+    bool b_Merge = false;
+    for(int i=0;i<vec_SimilarDocForSen.size();i++)
+    {
+        SimilarDoc simDocDB = vec_SimilarDocForSen[i];
+        Range rangeDB = {simDocDB.textrange_SearchDoc.offset, simDocDB.textrange_SearchDoc.offset + simDocDB.textrange_SearchDoc.length };
+        Range simDocRange = {similarDoc.textrange_SearchDoc.offset, similarDoc.textrange_SearchDoc.offset + similarDoc.textrange_SearchDoc.length};
+        if(simDocRange.begin > rangeDB.begin && simDocRange.end < rangeDB.end) //位置范围比已经保存的位置范围小，不予处理
+        {
+            b_Merge = true;
+            break;
+        }
+        if(simDocRange.begin < rangeDB.begin && simDocRange.begin > rangeDB.end )//位置范围比已经保存的位置范围大，删除一保存的位置，并递归合并
+        {
+            b_Merge = true;
+            vec_SimilarDocForSen.erase(vec_SimilarDocForSen.begin() + i);
+            MergeLongestSimilarSentence(vec_SimilarDocForSen,similarDoc);
+        }
+    }
+    if(!b_Merge)//不能合并，就添加到向量中
+    {
+        vec_SimilarDocForSen.push_back(similarDoc);
+    }
+}
 
 RangeUtil::~RangeUtil()
 {

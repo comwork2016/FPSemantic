@@ -253,9 +253,9 @@ std::string DocumentDao::QuerySIMSimilarity(const Document* doc)
     查询句子相似的文档
 */
 //std::vector<FingerPrintsSimilarDocument> DocumentDao::GetSentenceSimilarDocument(doc)
-std::vector<SimilarDocRange> DocumentDao::GetSentenceSimilarDocument(const Document* doc)
+std::vector<SimilarDoc> DocumentDao::GetSentenceSimilarDocument(const Document* doc)
 {
-    std::vector<SimilarDocRange> vec_SimilarDocRange;
+    std::vector<SimilarDoc> vec_SimilarDoc;
     for(int i=0; i<doc->GetvecParagraph().size(); i++)
     {
         Paragraph para = doc->GetvecParagraph()[i];
@@ -267,6 +267,7 @@ std::vector<SimilarDocRange> DocumentDao::GetSentenceSimilarDocument(const Docum
                 continue;
             }
             std::string str_Search = doc->GetstrContents().substr(sen.textRange.offset,sen.textRange.length);
+            std::vector<SimilarDoc> vec_SimilarDocForSen;//一个句子中的相似范围
             //每一遍，统计文档和文档句子出现的次数
             std::map<DOC_ID,int> map_DocOcurCount;
             std::set<std::string> set_Words;//一个句子中的词语只算作一次
@@ -405,8 +406,8 @@ std::vector<SimilarDocRange> DocumentDao::GetSentenceSimilarDocument(const Docum
                             docDB = map_DocIDDocument[docID];
                         }
                         std::string str_Similar = docDB->GetstrContents().substr(n_SimDocBegin,n_SimDocEnd-n_SimDocBegin);
-                        std::cout<<"--------------------------"<<str_Search<<std::endl;
-                        std::cout<<str_Similar<<std::endl;
+                        //std::cout<<"--------------------------"<<str_Search<<std::endl;
+                        //std::cout<<str_Similar<<std::endl;
                         //std::cin.get();
                         std::vector<PairSenRange> vec_PairSenRange;
                         lss->GetSimBoundary(str_Search,str_Similar,vec_PairSenRange);
@@ -429,23 +430,27 @@ std::vector<SimilarDocRange> DocumentDao::GetSentenceSimilarDocument(const Docum
                             int n_SimSenEnd = map_NoPositionInDoc[n_SimWordNoEnd].end;
                             TextRange textrange_SimDoc = {n_SimSenBegin, n_SimSenEnd - n_SimSenBegin};//范围
                             std::string str_Similar = docDB->GetstrContents().substr(n_SimSenBegin,n_SimSenEnd - n_SimSenBegin);//原始句子
-
+//std::cout<<std::endl<<std::endl<<str_Search<<std::endl<<std::endl<<str_Similar<<std::endl<<std::endl;
+//std::cin.get();
                             double d_similarity = ss->CalcSentenceSimilarity(str_Search,str_Similar);
                             if(d_similarity > SIMGATE)
                             {
-                                SimilarDocRange similarDocRange;//相似文档的范围
-                                similarDocRange.str_Search = str_Search;
-                                similarDocRange.textrange_SearchDoc = textrange_SearchDoc;
-                                similarDocRange.docID_DB = docID_DB;
-                                similarDocRange.str_Similar = str_Similar;
-                                similarDocRange.textrange_SimilarDoc = textrange_SimDoc;
-                                similarDocRange.similarity = d_similarity;
-                                vec_SimilarDocRange.push_back(similarDocRange);
+                                SimilarDoc similarDoc;//相似文档的范围
+                                similarDoc.str_Search = str_Search;
+                                similarDoc.textrange_SearchDoc = textrange_SearchDoc;
+                                similarDoc.docID_DB = docID_DB;
+                                similarDoc.str_Similar = str_Similar;
+                                similarDoc.textrange_SimilarDoc = textrange_SimDoc;
+                                similarDoc.similarity = d_similarity;
+                                //
+                                RangeUtil::MergeLongestSimilarSentence(vec_SimilarDocForSen,similarDoc);
                             }
                         }
                     }
                 }
             }
+            //将句子中的相似文档添加到总的相似文档向量中
+            vec_SimilarDoc.insert(vec_SimilarDoc.end(),vec_SimilarDocForSen.begin(),vec_SimilarDocForSen.end());
             //释放读取的文档资源信息
             for(std::map<DOC_ID,Document*>::iterator it = map_DocIDDocument.begin(); it != map_DocIDDocument.end(); it++)
             {
@@ -455,7 +460,7 @@ std::vector<SimilarDocRange> DocumentDao::GetSentenceSimilarDocument(const Docum
             delete ss;
         }
     }
-    return vec_SimilarDocRange;
+    return vec_SimilarDoc;
 }
 
 DocumentDao::~DocumentDao()
