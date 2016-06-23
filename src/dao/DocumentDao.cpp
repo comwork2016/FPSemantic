@@ -276,11 +276,11 @@ std::vector<SimilarDoc> DocumentDao::GetSentenceSimilarDocument(const Document* 
             std::vector<std::map<DOC_ID,WordIndexRecord*> > vec_AllWordIndex;//所有词语的索引值，避免频繁查库
             for(int k=0; k<sen.vec_splitedHits.size(); k++)
             {
-                /*char ch_pos = sen.vec_splitedHits[k].POS[0];
+                char ch_pos = sen.vec_splitedHits[k].POS[0];
                 if(ch_pos != 'n' && ch_pos !='m' && ch_pos != 't')
                 {
                     continue;
-                }*/
+                }
                 std::string str_Word = sen.vec_splitedHits[k].word;
                 if(set_Words.find(str_Word)!= set_Words.end())
                 {
