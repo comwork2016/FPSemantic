@@ -5,9 +5,6 @@
 #include "ReadCorpus.h"
 #include "DocumentOperation.h"
 #include "GlossaryDao.h"
-//to delete
-#include "SentenceSimilarity.h"
-#include "LongestSimilarSentence.h"
 
 //静态变量的初始化
 std::map<std::string,double> ReadCorpus::map_CorpusTF;

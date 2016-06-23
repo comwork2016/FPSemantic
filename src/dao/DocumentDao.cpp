@@ -405,8 +405,8 @@ std::vector<SimilarDoc> DocumentDao::GetSentenceSimilarDocument(const Document* 
                             docDB = map_DocIDDocument[docID];
                         }
                         std::string str_Similar = docDB->GetstrContents().substr(n_SimDocBegin,n_SimDocEnd-n_SimDocBegin);
-                        //std::cout<<"--------------------------"<<str_Search<<std::endl<<std::endl;;
-                        //std::cout<<str_Similar<<std::endl;
+                        std::cout<<"--------------------------"<<str_Search<<std::endl<<std::endl;;
+                        std::cout<<str_Similar<<std::endl;
                         //std::cin.get();
                         std::vector<SenRangeSimilarity> vec_SenRangeSimilarity;
                         lss->GetSimBoundary(str_Search,str_Similar,vec_SenRangeSimilarity);
@@ -430,7 +430,7 @@ std::vector<SimilarDoc> DocumentDao::GetSentenceSimilarDocument(const Document* 
                             TextRange textrange_SimDoc = {n_SimSenBegin, n_SimSenEnd - n_SimSenBegin};//范围
                             std::string str_Similar = docDB->GetstrContents().substr(n_SimSenBegin,n_SimSenEnd - n_SimSenBegin);//原始句子
 
-                            //std::cout<<std::endl<<std::endl<<"=================="<<str_Search<<std::endl<<std::endl<<str_Similar<<std::endl<<std::endl;
+                            std::cout<<std::endl<<std::endl<<"=================="<<str_Search<<std::endl<<std::endl<<str_Similar<<std::endl<<std::endl;
 
                             SimilarDoc similarDoc;//相似文档的范围
                             similarDoc.str_Search = str_Search;
@@ -439,7 +439,6 @@ std::vector<SimilarDoc> DocumentDao::GetSentenceSimilarDocument(const Document* 
                             similarDoc.str_Similar = str_Similar;
                             similarDoc.textrange_SimilarDoc = textrange_SimDoc;
                             similarDoc.similarity = senRangeSimilarity.similarity;
-                            //
                             RangeUtil::MergeLongestSimilarSentence(vec_SimilarDocForSen,similarDoc);
                         }
                     }
