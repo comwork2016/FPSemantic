@@ -71,7 +71,7 @@ int RangeUtil::MergeRangeToVector(std::vector<PairRangeTimes>& vec_DocRangeTimes
 /**
     合并两个句子中相似的范围
 */
-std::vector<PairSenRange> RangeUtil::MergeRangeInSentence(std::vector<PairSimWordNo>& vec_SimWordNo)
+std::vector<SenRangeSimilarity> RangeUtil::MergeRangeInSentence(std::vector<PairSimWordNo>& vec_SimWordNo)
 {
     std::vector<PairRangeTimes> vec_DocRangeTimes1,vec_DocRangeTimes2;
     for(int i=0; i<vec_SimWordNo.size(); i++)
@@ -135,7 +135,7 @@ std::vector<PairSenRange> RangeUtil::MergeRangeInSentence(std::vector<PairSimWor
             vec_DocRangeTimes2.push_back(tmp_docRangeTimes2);
         }
     }
-    std::vector<PairSenRange> vec_PairSenRange;
+    std::vector<SenRangeSimilarity> vec_SenRangeSimilarity;
     for(int m=0; m<vec_DocRangeTimes1.size(); m++)
     {
         PairRangeTimes docRangeTimes1 = vec_DocRangeTimes1[m];
@@ -144,13 +144,13 @@ std::vector<PairSenRange> RangeUtil::MergeRangeInSentence(std::vector<PairSimWor
         {
             Range range1 = docRangeTimes1.first;
             Range range2 = docRangeTimes2.first;
-            PairSenRange pair_Range(range1,range2);
-            vec_PairSenRange.push_back(pair_Range);
-            //std::cout<<"["<<range1.begin<<","<<range1.end<<"]"<<docRangeTimes1.second<<"------["<<range2.begin<<","<<range2.end<<"]"<<docRangeTimes2.second<<std::endl;
+            SenRangeSimilarity senRangeSimilarity = {range1,range2};
+            vec_SenRangeSimilarity.push_back(senRangeSimilarity);
         }
     }
-    return vec_PairSenRange;
+    return vec_SenRangeSimilarity;
 }
+
 void RangeUtil::MergeLongestSimilarSentence(std::vector<SimilarDoc>& vec_SimilarDocForSen, SimilarDoc& similarDoc)
 {
     bool b_Merge = false;

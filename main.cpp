@@ -45,28 +45,6 @@ int main()
     //Document* doc = new Document("./in/utf_742.txt",true);
     //doc->Display();
 
-/*
-    LongestSimilarSentence* lss = new LongestSimilarSentence();
-    std::string str_Search = "全要素之间练协同、模块之间练集成的方法，探索";
-    std::string str_Similar = "练集成，积极稳妥地探索实践一体化训练的方法";
-    std::vector<PairSenRange> vec_PairSenRange;
-    double d_similarity = lss->GetSimBoundary(str_Search,str_Similar,vec_PairSenRange);
-    std::cout<<d_similarity<<std::endl;
-    delete lss;
-    for(int x=0; x<vec_PairSenRange.size(); x++)
-    {
-        PairSenRange pair_SenRange = vec_PairSenRange[x];
-        //leakDoc
-        Range range_SeachSen = pair_SenRange.first;
-        // db doc
-        Range range_SimSen = pair_SenRange.second;
-        std::cout<<range_SeachSen.begin<<","<<range_SeachSen.end<<"----------"<<range_SimSen.begin<<","<<range_SimSen.end<<std::endl;
-    }
-
-    SentenceSimilarity* ss = new SentenceSimilarity();
-    std::cout<<ss->CalcSentenceSimilarity(str_Search,str_Similar)<<std::endl;
-    delete ss;*/
-
     /*
     SentenceSimilarity* ss = new SentenceSimilarity();
     std::string str11 = "“龙眼”无人机是由美国海军陆战队士兵在阿富汗地区发射";

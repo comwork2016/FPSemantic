@@ -15,9 +15,11 @@ class LongestSimilarSentence
     public:
         LongestSimilarSentence();
         virtual ~LongestSimilarSentence();
-        double GetSimBoundary(const std::string str_Sen1,const std::string str_Sen2,std::vector<PairSenRange>& vec_PairSenRange);
+        double GetSimBoundary(const std::string str_Sen1,const std::string str_Sen2,std::vector<SenRangeSimilarity>& vec_SenRangeSimilarity);
     protected:
-        double CalcVectorSimilarity(std::vector<std::string>& vec1, std::vector<std::string>& vec2, std::map<std::string,std::vector<std::string> >& map_WordConceptsVector,std::vector<PairSimWordNo>& vec_SimWordNo);
+        void CalcSimMatrix(std::vector<std::string>& vec1,std::vector<std::string>& vec2, std::map<std::string,std::vector<std::string> >& map_WordConceptsVector,double** matrix);
+        std::vector<PairSimWordNo> GetPairedSimWordNo(double** matrix,int len1, int len2);
+        double CalcSentenceSimilarity(double** matrix,Range range_row, Range range_col);
     private:
         GlossaryDao* glossaryDao;
 };

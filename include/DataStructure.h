@@ -16,14 +16,22 @@ struct Range
 
 typedef std::pair<Range,int> PairRangeTimes;//存储文档中词语的位置范围信息
 typedef std::pair<int,int> PairSimWordNo;//存储文档中相似词语的编号对信息
-typedef std::pair<Range,Range> PairSenRange;//存储两个相似句子的范围
 typedef std::pair<DOC_ID,int> PairDocIDParaPos;//存储文档ID和句子位置
+
+struct SenRangeSimilarity//存储两个相似句子的范围
+{
+    Range range_Search;
+    Range range_Similar;
+    double similarity;
+};
 
 const int HAMMINGDIST = 3;
 const int SIMHASHBITS = 64;
 
 const int KGRAM = 6;
 const int SIMILARRANGE = 3;
+const double WORDSIMGATE = 0.6;
+const static double SENSIMGATE=0.8;
 const int SIMHASHKGRAM = 2;
 const int BASE = 12;
 const SIMHASH_TYPE MODNUM = (((unsigned SIMHASH_TYPE)1 << (SIMHASHBITS-1))- 1)/BASE/2; //不能取太大的值，否则在计算KRHash时会发生溢出，导致结果不准确
@@ -46,7 +54,6 @@ const static double weight_q=0.1;
 const static double weight_m=0.1;
 const static double weight_t=0.1;
 
-const static double SIMGATE=0.8;
 
 //定义结构体，文档某一段之间的内容
 struct TextRange
