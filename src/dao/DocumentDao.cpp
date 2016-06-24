@@ -276,8 +276,9 @@ std::vector<SimilarDoc> DocumentDao::GetSentenceSimilarDocument(const Document* 
             std::vector<std::map<DOC_ID,WordIndexRecord*> > vec_AllWordIndex;//所有词语的索引值，避免频繁查库
             for(int k=0; k<sen.vec_splitedHits.size(); k++)
             {
+                /*如果用名词查找的话，句子中除了名词之类的其他词语的位置需要另外保存*/
                 char ch_pos = sen.vec_splitedHits[k].POS[0];
-                if(ch_pos != 'n' && ch_pos !='m' && ch_pos != 't')
+                if(ch_pos != 'n' && ch_pos !='m' && ch_pos != 't')//之查询相同的名词，数词，时间
                 {
                     continue;
                 }
@@ -386,7 +387,7 @@ std::vector<SimilarDoc> DocumentDao::GetSentenceSimilarDocument(const Document* 
                 for(int m=0; m<vec_RangeTimes.size(); m++)
                 {
                     PairRangeTimes docRangeTimes = vec_RangeTimes[m];
-                    if(docRangeTimes.second > KGRAM)//超过4个相同的就计算相似度
+                    if(docRangeTimes.second > SAMEWORDGATE)//超过4个相同的就计算相似度
                     {
                         Range range_Sim = docRangeTimes.first;//相似句子的范围
                         std::map<int,Range> map_NoPositionInDoc = map_DocWordNoPosition[docID];
@@ -405,8 +406,8 @@ std::vector<SimilarDoc> DocumentDao::GetSentenceSimilarDocument(const Document* 
                             docDB = map_DocIDDocument[docID];
                         }
                         std::string str_Similar = docDB->GetstrContents().substr(n_SimDocBegin,n_SimDocEnd-n_SimDocBegin);
-                        std::cout<<"--------------------------"<<str_Search<<std::endl<<std::endl;;
-                        std::cout<<str_Similar<<std::endl;
+                        //std::cout<<"--------------------------"<<str_Search<<std::endl<<std::endl;;
+                        //std::cout<<str_Similar<<std::endl;
                         //std::cin.get();
                         std::vector<SenRangeSimilarity> vec_SenRangeSimilarity;
                         lss->GetSimBoundary(str_Search,str_Similar,vec_SenRangeSimilarity);
@@ -427,10 +428,14 @@ std::vector<SimilarDoc> DocumentDao::GetSentenceSimilarDocument(const Document* 
                             int n_SimWordNoEnd = range_Sim.begin + range_SimSen.end;
                             int n_SimSenBegin = map_NoPositionInDoc[n_SimWordNoBegin].begin;//相似句子段在文章中的偏移值
                             int n_SimSenEnd = map_NoPositionInDoc[n_SimWordNoEnd].end;
+                            //std::cout<<range_Sim.begin<<","<<range_SimSen.begin<<","<<range_SimSen.end<<std::endl;
+                            //std::cout<<n_SimWordNoBegin<<","<<n_SimWordNoEnd<<","<<std::endl;
+                            //std::cout<<n_SimSenBegin<<","<<n_SimSenEnd<<","<<std::endl;
+                            //std::cin.get();
                             TextRange textrange_SimDoc = {n_SimSenBegin, n_SimSenEnd - n_SimSenBegin};//范围
                             std::string str_Similar = docDB->GetstrContents().substr(n_SimSenBegin,n_SimSenEnd - n_SimSenBegin);//原始句子
 
-                            std::cout<<std::endl<<std::endl<<"=================="<<str_Search<<std::endl<<std::endl<<str_Similar<<std::endl<<std::endl;
+                            //std::cout<<std::endl<<std::endl<<"=================="<<str_Search<<std::endl<<std::endl<<str_Similar<<std::endl<<std::endl;
 
                             SimilarDoc similarDoc;//相似文档的范围
                             similarDoc.str_Search = str_Search;

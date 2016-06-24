@@ -52,6 +52,7 @@
 		<Unit filename="include/corpus/ReadCorpus.h" />
 		<Unit filename="include/dao/DocumentDao.h" />
 		<Unit filename="include/dao/GlossaryDao.h" />
+		<Unit filename="include/dao/IDFDap.h" />
 		<Unit filename="include/service/DocumentOperation.h" />
 		<Unit filename="include/service/LongestSimilarSentence.h" />
 		<Unit filename="include/service/WordSimilarity.h" />
@@ -67,6 +68,7 @@
 		<Unit filename="src/corpus/ReadCorpus.cpp" />
 		<Unit filename="src/dao/DocumentDao.cpp" />
 		<Unit filename="src/dao/GlossaryDao.cpp" />
+		<Unit filename="src/dao/IDFDap.cpp" />
 		<Unit filename="src/service/DocumentOperation.cpp" />
 		<Unit filename="src/service/LongestSimilarSentence.cpp" />
 		<Unit filename="src/service/WordSimilarity.cpp" />

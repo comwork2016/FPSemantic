@@ -29,6 +29,7 @@ const int HAMMINGDIST = 3;
 const int SIMHASHBITS = 64;
 
 const int KGRAM = 6;
+const int SAMEWORDGATE = 6;
 const int SIMILARRANGE = 3;
 const double WORDSIMGATE = 0.6;
 const static double SENSIMGATE=0.8;

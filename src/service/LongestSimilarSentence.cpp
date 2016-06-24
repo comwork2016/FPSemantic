@@ -6,7 +6,7 @@ LongestSimilarSentence::LongestSimilarSentence()
     glossaryDao = new GlossaryDao();
 }
 
-double LongestSimilarSentence::GetSimBoundary(const std::string str_Sen1,const std::string str_Sen2,std::vector<SenRangeSimilarity>& vec_SenRangeSimilarity)
+void LongestSimilarSentence::GetSimBoundary(const std::string str_Sen1,const std::string str_Sen2,std::vector<SenRangeSimilarity>& vec_SenRangeSimilarity)
 {
     //如果两个句子的长度相差一杯，一般是不相似的
     std::vector<SplitedHits> vec_Word1, vec_Word2;
@@ -14,6 +14,11 @@ double LongestSimilarSentence::GetSimBoundary(const std::string str_Sen1,const s
     vec_Word1 = nlpirUtil->SplitStringToWords(str_Sen1);
     vec_Word2 = nlpirUtil->SplitStringToWords(str_Sen2);
     delete nlpirUtil;
+    //如果词语个数没有超过阈值，然会
+    if(vec_Word1.size() < KGRAM || vec_Word2.size()<KGRAM)
+    {
+        return;
+    }
     //便利所有词语，提取词语概念
     std::vector<std::string> vec_StrWord1;
     std::vector<std::string> vec_StrWord2;

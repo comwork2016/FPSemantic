@@ -5,6 +5,7 @@
 #include "ReadCorpus.h"
 #include "DocumentOperation.h"
 #include "GlossaryDao.h"
+#include "IDFDao.h"
 
 //静态变量的初始化
 std::map<std::string,double> ReadCorpus::map_CorpusTF;
@@ -25,19 +26,25 @@ int main()
     glossaryDao->ReadGlossaryToDB(str_GlossaryPath);
     delete glossaryDao;*/
 
+    //将词语逆文档频率存入数据库中
+    IDFDao* idfDao = new IDFDao();
+    std::string str_IDFPath="./Corpus/idf.txt";
+    idfDao->ReadIDFToDB(str_IDFPath);
+    delete idfDao;
+
     //读取语料库中的词频信息
     //ReadCorpus::ReadCorpusTF("./Corpus/Corpus.csv");
-    ReadCorpus::ReadStopTerm("./Corpus/StopTerm.txt");
-    ReadCorpus::ReadSememe("./dat/whole.dat");
+    //ReadCorpus::ReadStopTerm("./Corpus/StopTerm.txt");
+    //ReadCorpus::ReadSememe("./dat/whole.dat");
 
     //DocumentOperation::AddDocument("./in/utf_23.txt");
-    std::string str_InputDir = "./in/";
+    //std::string str_InputDir = "./in/";
     //DocumentOperation::AddDirectoryDocuments(str_InputDir);
 
     //查询数据泄露
     //std::string str_LeakDoc = "./in/utf_1511.txt";
-    std::string str_LeakDoc = "./test/leak.txt";
-    DocumentOperation::SearchLeak(str_LeakDoc);
+    //std::string str_LeakDoc = "./test/leak.txt";
+    //DocumentOperation::SearchLeak(str_LeakDoc);
 
     //Document* doc = new Document("./in/utf_742.txt",true);
     //doc->Display();
