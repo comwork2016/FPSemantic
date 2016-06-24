@@ -1,6 +1,10 @@
 #ifndef IDFDAO_H
 #define IDFDAO_H
 
+/**
+    工程中没有用到
+*/
+
 #include <fstream>
 #include "mongo/client/dbclient.h"
 

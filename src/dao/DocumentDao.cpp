@@ -276,12 +276,12 @@ std::vector<SimilarDoc> DocumentDao::GetSentenceSimilarDocument(const Document* 
             std::vector<std::map<DOC_ID,WordIndexRecord*> > vec_AllWordIndex;//所有词语的索引值，避免频繁查库
             for(int k=0; k<sen.vec_splitedHits.size(); k++)
             {
-                /*如果用名词查找的话，句子中除了名词之类的其他词语的位置需要另外保存*/
+                /*如果用名词查找的话，句子中除了名词之类的其他词语的位置需要另外保存
                 char ch_pos = sen.vec_splitedHits[k].POS[0];
                 if(ch_pos != 'n' && ch_pos !='m' && ch_pos != 't')//之查询相同的名词，数词，时间
                 {
                     continue;
-                }
+                }*/
                 std::string str_Word = sen.vec_splitedHits[k].word;
                 if(set_Words.find(str_Word)!= set_Words.end())
                 {
@@ -406,11 +406,12 @@ std::vector<SimilarDoc> DocumentDao::GetSentenceSimilarDocument(const Document* 
                             docDB = map_DocIDDocument[docID];
                         }
                         std::string str_Similar = docDB->GetstrContents().substr(n_SimDocBegin,n_SimDocEnd-n_SimDocBegin);
-                        //std::cout<<"--------------------------"<<str_Search<<std::endl<<std::endl;;
-                        //std::cout<<str_Similar<<std::endl;
+                        std::cout<<"--------------------------"<<str_Search<<std::endl<<std::endl;;
+                        std::cout<<str_Similar<<std::endl;
                         //std::cin.get();
                         std::vector<SenRangeSimilarity> vec_SenRangeSimilarity;
-                        lss->GetSimBoundary(str_Search,str_Similar,vec_SenRangeSimilarity);
+                        //lss->GetSimBoundary(str_Search,str_Similar,vec_SenRangeSimilarity);
+                        lss->GetSimBoundary(sen.vec_splitedHits,str_Similar,vec_SenRangeSimilarity);
                         //取出相似句子保存
                         for(int x=0; x<vec_SenRangeSimilarity.size(); x++)
                         {

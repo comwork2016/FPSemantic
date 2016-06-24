@@ -6,6 +6,79 @@ LongestSimilarSentence::LongestSimilarSentence()
     glossaryDao = new GlossaryDao();
 }
 
+void LongestSimilarSentence::GetSimBoundary(const std::vector<SplitedHits> vec_SearchWords,const std::string str_Sen2,std::vector<SenRangeSimilarity>& vec_SenRangeSimilarity)
+{
+    //如果两个句子的长度相差一杯，一般是不相似的
+    std::vector<SplitedHits> vec_Word1, vec_Word2;
+    NLPIRUtil* nlpirUtil = new NLPIRUtil();
+    //vec_Word1 = nlpirUtil->SplitStringToWords(str_Sen1);
+    vec_Word1 = vec_SearchWords;
+    vec_Word2 = nlpirUtil->SplitStringToWords(str_Sen2);
+    delete nlpirUtil;
+    //如果词语个数没有超过阈值，然会
+    if(vec_Word1.size() < KGRAM || vec_Word2.size()<KGRAM)
+    {
+        return;
+    }
+    //便利所有词语，提取词语概念
+    std::vector<std::string> vec_StrWord1;
+    std::vector<std::string> vec_StrWord2;
+    std::map<std::string,std::vector<std::string> > map_WordConceptsVector;
+    for(int i=0; i<vec_Word1.size(); i++)
+    {
+        std::string str_Word = vec_Word1[i].word;
+        vec_StrWord1.push_back(str_Word);
+        if(map_WordConceptsVector.find(str_Word) == map_WordConceptsVector.end())
+        {
+            std::vector<std::string> vec1 = glossaryDao->SelectSememe(str_Word);
+            map_WordConceptsVector[str_Word] = vec1;
+        }
+    }
+    for(int i=0; i<vec_Word2.size(); i++)
+    {
+        std::string str_Word = vec_Word2[i].word;
+        vec_StrWord2.push_back(str_Word);
+        if(map_WordConceptsVector.find(str_Word) == map_WordConceptsVector.end())
+        {
+            std::vector<std::string> vec2 = glossaryDao->SelectSememe(str_Word);
+            map_WordConceptsVector[str_Word] = vec2;
+        }
+    }
+    //计算词语相似度矩阵
+    int len1=vec_Word1.size();
+    int len2=vec_Word2.size();
+    double** matrix;
+    //矩阵初始化
+    matrix = new double*[len1];
+    for(int i=0; i<len1; i++)
+    {
+        matrix[i] = new double[len2];
+    }
+    CalcSimMatrix(vec_StrWord1,vec_StrWord2,map_WordConceptsVector,matrix);//计算词语的相似度矩阵
+    //获取相似词语的配对信息
+    std::vector<PairSimWordNo> vec_SimWordNo = GetPairedSimWordNo(matrix,len1,len2);
+    std::vector<SenRangeSimilarity> vec_SenRangeSimilarityTmp = RangeUtil::MergeRangeInSentence(vec_SimWordNo);//合并配对信息
+    //计算配对之后的句子相似度
+    for(int k=0; k< vec_SenRangeSimilarityTmp.size(); k++)
+    {
+        SenRangeSimilarity senRangeSimilarity = vec_SenRangeSimilarityTmp[k];
+        Range range_Search = senRangeSimilarity.range_Search;
+        Range range_Similar = senRangeSimilarity.range_Similar;
+        senRangeSimilarity.similarity = CalcSentenceSimilarity(matrix,range_Search,range_Similar);//计算两个范围内句子的相似度
+        //std::cout<<senRangeSimilarity.similarity<<std::endl;
+        if(senRangeSimilarity.similarity > SENSIMGATE)//如果相似度大于阈值，从最终结果中移除
+        {
+            vec_SenRangeSimilarity.push_back(senRangeSimilarity);
+        }
+    }
+    //释放matrix矩阵资源
+    for(int i=0; i<len1; i++)
+    {
+        delete[] matrix[i];
+    }
+    delete[] matrix;
+}
+/*
 void LongestSimilarSentence::GetSimBoundary(const std::string str_Sen1,const std::string str_Sen2,std::vector<SenRangeSimilarity>& vec_SenRangeSimilarity)
 {
     //如果两个句子的长度相差一杯，一般是不相似的
@@ -76,7 +149,7 @@ void LongestSimilarSentence::GetSimBoundary(const std::string str_Sen1,const std
         delete[] matrix[i];
     }
     delete[] matrix;
-}
+}*/
 
 /**
     根据相似度矩阵和范围，计算两个句子的相似度

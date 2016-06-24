@@ -202,6 +202,19 @@ void Document::CalcDocSimHash()
 }
 
 /**
+    计算词语的逆文档频率
+*//*
+void Document::CalcTFIDF()
+{
+    for(std::map<std::string,double>::iterator it = this->m_mapTFIDF.begin(); it != this->m_mapTFIDF.end(); it++)
+    {
+        std::string str_term = it->first;
+        double d_TF = it->second / this->m_nWordCount;
+        this->m_mapTFIDF[str_term] = d_TF;
+    }
+}*/
+
+/**
     将句子分成词语块，便于小粒度查找泄露文档
 *//*
 void Document::SplitSentencesToKGrams()

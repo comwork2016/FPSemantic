@@ -51,6 +51,7 @@ class Document
         int ReadDocumentContent();
         int ReadDocumentAndSplitToSentence();
         void SplitParaphToSentence(Paragraph& para);
+        void CalcTFIDF();
     private:
 
         DOC_ID m_DocID;
@@ -65,9 +66,8 @@ class Document
         SIMHASH_TYPE m_lSimHash16_4;//simhash48-63位
 
         std::vector<Paragraph> m_vecParagraph;
-        //std::vector<std::string> m_vecTitleTerm;
         int m_nWordCount; //文章中的有效词的总数
-        //std::map<std::string, double> m_mapTF;//文档词频信息
+        std::map<std::string, double> m_mapTFIDF;//文档词频信息
 
         //当前文档中单词的倒排索引
         std::map<std::string,WordIndex*> m_mapWordIndex;

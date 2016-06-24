@@ -1,5 +1,9 @@
 #include "IDFDao.h"
 
+/**
+    工程中没有用到
+*/
+
 IDFDao::IDFDao()
 {
     //ctor
