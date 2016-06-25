@@ -95,7 +95,6 @@ std::vector<SenRangeSimilarity> RangeUtil::MergeRangeInSentence(std::vector<Pair
             [0,8]7------[0,7]7
             [14,14]1------[8,8]1
             [12,15]2------[18,20]2
-
             要合并17,9时不能正确合并
         */
         while(n_Merge1!=-1 && n_Merge2 !=-1)
@@ -144,7 +143,9 @@ std::vector<SenRangeSimilarity> RangeUtil::MergeRangeInSentence(std::vector<Pair
         {
             Range range1 = docRangeTimes1.first;
             Range range2 = docRangeTimes2.first;
-            SenRangeSimilarity senRangeSimilarity = {range1,range2};
+            SenRangeSimilarity senRangeSimilarity;
+            senRangeSimilarity.range_SearchNo = range1;
+            senRangeSimilarity.range_SimilarNo = range2;
             vec_SenRangeSimilarity.push_back(senRangeSimilarity);
         }
     }
@@ -157,7 +158,9 @@ void RangeUtil::MergeLongestSimilarSentence(std::vector<SimilarDoc>& vec_Similar
     for(int i=0;i<vec_SimilarDocForSen.size();i++)
     {
         SimilarDoc simDocDB = vec_SimilarDocForSen[i];
-        Range rangeDB = {simDocDB.textrange_SearchDoc.offset, simDocDB.textrange_SearchDoc.offset + simDocDB.textrange_SearchDoc.length };
+        Range rangeDB;
+        rangeDB.begin = simDocDB.textrange_SearchDoc.offset;
+        rangeDB.end = simDocDB.textrange_SearchDoc.offset + simDocDB.textrange_SearchDoc.length ;
         Range simDocRange = {similarDoc.textrange_SearchDoc.offset, similarDoc.textrange_SearchDoc.offset + similarDoc.textrange_SearchDoc.length};
         if(simDocRange.begin > rangeDB.begin && simDocRange.end < rangeDB.end) //位置范围比已经保存的位置范围小，不予处理
         {

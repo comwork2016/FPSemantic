@@ -417,28 +417,26 @@ std::vector<SimilarDoc> DocumentDao::GetSentenceSimilarDocument(const Document* 
                         {
                             SenRangeSimilarity senRangeSimilarity = vec_SenRangeSimilarity[x];
                             //leakDoc
-                            Range range_SeachSen = senRangeSimilarity.range_Search;
-                            int n_SearchSenBegin = sen.vec_splitedHits[range_SeachSen.begin].textRange.offset;//相似句子段在文章中的偏移值
-                            int n_SearchSenEnd = sen.vec_splitedHits[range_SeachSen.end].textRange.offset + sen.vec_splitedHits[range_SeachSen.end].textRange.length;
+                            Range range_SeachSen;
+                            range_SeachSen.begin = sen.vec_splitedHits[senRangeSimilarity.range_SearchNo.begin].NoInDoc;
+                            range_SeachSen.end = sen.vec_splitedHits[senRangeSimilarity.range_SearchNo.end].NoInDoc;
+                            int n_SearchSenBegin = sen.vec_splitedHits[senRangeSimilarity.range_SearchNo.begin].textRange.offset;//相似句子段在文章中的偏移值
+                            int n_SearchSenEnd = sen.vec_splitedHits[senRangeSimilarity.range_SearchNo.end].textRange.offset + sen.vec_splitedHits[senRangeSimilarity.range_SearchNo.end].textRange.length;
                             TextRange textrange_SearchDoc = {n_SearchSenBegin, n_SearchSenEnd - n_SearchSenBegin};//范围
                             std::string str_Search = doc->GetstrContents().substr(n_SearchSenBegin,n_SearchSenEnd-n_SearchSenBegin);
                             // db doc
-                            Range range_SimSen = senRangeSimilarity.range_Similar;
+                            Range range_SimSen;
+                            range_SimSen.begin = range_Sim.begin + senRangeSimilarity.range_SimilarNo.begin;
+                            range_SimSen.end = range_Sim.begin + senRangeSimilarity.range_SimilarNo.end;
                             DOC_ID docID_DB = docID;
-                            int n_SimWordNoBegin = range_Sim.begin + range_SimSen.begin;//相似句子段在文章中的编号
-                            int n_SimWordNoEnd = range_Sim.begin + range_SimSen.end;
-                            int n_SimSenBegin = map_NoPositionInDoc[n_SimWordNoBegin].begin;//相似句子段在文章中的偏移值
-                            int n_SimSenEnd = map_NoPositionInDoc[n_SimWordNoEnd].end;
-                            //std::cout<<range_Sim.begin<<","<<range_SimSen.begin<<","<<range_SimSen.end<<std::endl;
-                            //std::cout<<n_SimWordNoBegin<<","<<n_SimWordNoEnd<<","<<std::endl;
-                            //std::cout<<n_SimSenBegin<<","<<n_SimSenEnd<<","<<std::endl;
-                            //std::cin.get();
+                            int n_SimSenBegin = map_NoPositionInDoc[range_SimSen.begin].begin;//相似句子段在文章中的偏移值
+                            int n_SimSenEnd = map_NoPositionInDoc[range_SimSen.end].end;
+
                             TextRange textrange_SimDoc = {n_SimSenBegin, n_SimSenEnd - n_SimSenBegin};//范围
                             std::string str_Similar = docDB->GetstrContents().substr(n_SimSenBegin,n_SimSenEnd - n_SimSenBegin);//原始句子
-
-                            //std::cout<<std::endl<<std::endl<<"=================="<<str_Search<<std::endl<<std::endl<<str_Similar<<std::endl<<std::endl;
-
                             SimilarDoc similarDoc;//相似文档的范围
+                            similarDoc.range_SearchNo = range_SeachSen;
+                            similarDoc.range_SimilarNo = range_SimSen;
                             similarDoc.str_Search = str_Search;
                             similarDoc.textrange_SearchDoc = textrange_SearchDoc;
                             similarDoc.docID_DB = docID_DB;
@@ -450,8 +448,47 @@ std::vector<SimilarDoc> DocumentDao::GetSentenceSimilarDocument(const Document* 
                     }
                 }
             }
-            //将句子中的相似文档添加到总的相似文档向量中
-            vec_SimilarDoc.insert(vec_SimilarDoc.end(),vec_SimilarDocForSen.begin(),vec_SimilarDocForSen.end());
+            //将句子中的相似文档与上一个记录合并，并添加到总的相似文档向量中
+            for(int is = 0; is < vec_SimilarDocForSen.size(); is++)
+            {
+                SimilarDoc simDoc = vec_SimilarDocForSen[is];//要合并的句子
+                if(!vec_SimilarDoc.empty())//如果存在相似的句子，查看能否合并
+                {
+                    SimilarDoc simDocLast = vec_SimilarDoc.back();
+                    //std::cout<<"Search: "<<simDoc.range_SearchNo.begin<<","<<simDoc.range_SearchNo.end<<std::endl;
+                    //std::cout<<"Search Last: "<<simDocLast.range_SearchNo.begin<<","<<simDocLast.range_SearchNo.end<<std::endl;
+                    //std::cout<<"Similar: "<<simDoc.range_SimilarNo.begin<<","<<simDoc.range_SimilarNo.end<<std::endl;
+                    //std::cout<<"Similar Last: "<<simDocLast.range_SimilarNo.begin<<","<<simDocLast.range_SimilarNo.end<<std::endl;
+                    //std::cout<<std::endl<<std::endl<<"=================="<<simDoc.str_Search<<std::endl<<std::endl<<simDoc.str_Similar<<std::endl<<std::endl;
+                    //std::cout<<std::endl<<std::endl<<"***************************"<<simDocLast.str_Search<<std::endl<<std::endl<<simDocLast.str_Similar<<std::endl<<std::endl;
+                    //std::cin.get();
+                    //如果两个句子是相邻的，则可以合并
+                    if(simDoc.docID_DB == simDocLast.docID_DB
+                            && simDoc.range_SearchNo.begin >= simDocLast.range_SearchNo.begin
+                            && simDoc.range_SearchNo.begin <= simDocLast.range_SearchNo.end + SIMILARRANGE
+                            && simDoc.range_SimilarNo.begin >= simDocLast.range_SimilarNo.begin
+                            && simDoc.range_SimilarNo.begin <= simDocLast.range_SimilarNo.end + SIMILARRANGE)
+                    {
+                        //计算两个句子合并之后的相似度
+                        int n_SearchWords = simDoc.range_SearchNo.end - simDoc.range_SearchNo.begin + 1;
+                        int n_SearchLastWords = simDocLast.range_SearchNo.end - simDocLast.range_SearchNo.begin + 1;
+                        simDoc.similarity = (n_SearchWords * simDoc.similarity + n_SearchLastWords * simDocLast.similarity)/(n_SearchWords + n_SearchLastWords);
+                        //更改两个句子合并之后的相似范围
+                        simDoc.textrange_SearchDoc.length = simDoc.textrange_SearchDoc.offset + simDoc.textrange_SearchDoc.length - simDocLast.textrange_SearchDoc.offset;
+                        simDoc.textrange_SearchDoc.offset = simDocLast.textrange_SearchDoc.offset;
+                        simDoc.range_SearchNo.begin = simDocLast.range_SearchNo.end;
+                        simDoc.textrange_SimilarDoc.length = simDoc.textrange_SimilarDoc.offset + simDoc.textrange_SimilarDoc.length - simDocLast.textrange_SimilarDoc.offset;
+                        simDoc.textrange_SimilarDoc.offset = simDocLast.textrange_SimilarDoc.offset;
+                        simDoc.range_SimilarNo.begin = simDocLast.range_SimilarNo.end;
+                        //更改两个相似句子的内容　
+                        simDoc.str_Search = doc->GetstrContents().substr(simDoc.textrange_SearchDoc.offset,simDoc.textrange_SearchDoc.length);
+                        simDoc.str_Similar = map_DocIDDocument[simDoc.docID_DB]->GetstrContents().substr(simDoc.textrange_SimilarDoc.offset,simDoc.textrange_SimilarDoc.length);
+                        //删除最后一个向量
+                        vec_SimilarDoc.pop_back();
+                    }
+                }
+                vec_SimilarDoc.push_back(simDoc);
+            }
             //释放读取的文档资源信息
             for(std::map<DOC_ID,Document*>::iterator it = map_DocIDDocument.begin(); it != map_DocIDDocument.end(); it++)
             {

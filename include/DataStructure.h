@@ -18,13 +18,6 @@ typedef std::pair<Range,int> PairRangeTimes;//存储文档中词语的位置范�
 typedef std::pair<int,int> PairSimWordNo;//存储文档中相似词语的编号对信息
 typedef std::pair<DOC_ID,int> PairDocIDParaPos;//存储文档ID和句子位置
 
-struct SenRangeSimilarity//存储两个相似句子的范围
-{
-    Range range_Search;
-    Range range_Similar;
-    double similarity;
-};
-
 const int HAMMINGDIST = 3;
 const int SIMHASHBITS = 64;
 
@@ -111,7 +104,17 @@ struct SimilarDoc
     DOC_ID docID_DB;
     TextRange textrange_SimilarDoc;
     std::string str_Similar;//相似句子
-    double similarity;//相似度
+    double similarity;
+    Range range_SearchNo;//相似句子的词语编号范围，方便多个句子的合并
+    Range range_SimilarNo;
+};
+
+
+struct SenRangeSimilarity//存储两个相似句子的范围
+{
+    Range range_SearchNo;
+    Range range_SimilarNo;
+    double similarity;
 };
 
 #endif // CONSTANTS_H_INCLUDED
