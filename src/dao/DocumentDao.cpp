@@ -35,8 +35,8 @@ std::map<DOC_ID,WordIndexRecord*> DocumentDao::QueryIndexOfWord(const std::strin
                 mongo::BSONObj bson_Pos = itr.next().Obj();
                 int n_WordPos = bson_Pos.getIntField("wordpos");
                 int n_NoInDoc = bson_Pos.getIntField("noindoc");
-                int n_ParaPos = bson_Pos.getIntField("parapos");
-                WordPos wordPos = {n_WordPos, n_NoInDoc,n_ParaPos};
+                int n_SenPos = bson_Pos.getIntField("senpos");
+                WordPos wordPos = {n_WordPos, n_NoInDoc,n_SenPos};
                 wordIndexRecord->AddPosInfo(wordPos);
             }
             map_WordIndexRecord[str_DocID] =wordIndexRecord;
@@ -79,7 +79,7 @@ int DocumentDao::InsertIndexes(std::map<std::string,WordIndex*> map_WordIndex)
                 mongo::BSONObjBuilder bb_pos;
                 bb_pos.append("wordpos",wordPos.wordPos);
                 bb_pos.append("noindoc",wordPos.NoInDoc);
-                bb_pos.append("parapos",wordPos.paraPos);
+                bb_pos.append("senpos",wordPos.senPos);
                 bb_PosArray.append(bb_pos.obj());
             }
             bb_Record.append("poss",bb_PosArray.arr());
@@ -334,7 +334,7 @@ std::vector<SimilarDoc> DocumentDao::GetSentenceSimilarDocument(const Document* 
                         Range posRange = {wordPos.wordPos, wordPos.wordPos+str_Word.length()};
                         map_NoPositionInDoc[wordPos.NoInDoc] = posRange;
                         //对每个词语的位置，合并
-                        PairDocIDParaPos pair_DocIDParaPos(docID,wordPos.paraPos);
+                        PairDocIDParaPos pair_DocIDParaPos(docID,wordPos.senPos);
                         Range wordRange = {wordPos.NoInDoc,wordPos.NoInDoc};
                         PairRangeTimes wordRangeTimes(wordRange,1);
                         if(map_SingleWordInDocParaRangeTimesVector.find(pair_DocIDParaPos) == map_SingleWordInDocParaRangeTimesVector.end())//文档的段落中没有出现过词语项
@@ -406,8 +406,8 @@ std::vector<SimilarDoc> DocumentDao::GetSentenceSimilarDocument(const Document* 
                             docDB = map_DocIDDocument[docID];
                         }
                         std::string str_Similar = docDB->GetstrContents().substr(n_SimDocBegin,n_SimDocEnd-n_SimDocBegin);
-                        std::cout<<"--------------------------"<<str_Search<<std::endl<<std::endl;;
-                        std::cout<<str_Similar<<std::endl;
+                        //std::cout<<"--------------------------"<<str_Search<<std::endl<<std::endl;;
+                        //std::cout<<str_Similar<<std::endl;
                         //std::cin.get();
                         std::vector<SenRangeSimilarity> vec_SenRangeSimilarity;
                         //lss->GetSimBoundary(str_Search,str_Similar,vec_SenRangeSimilarity);

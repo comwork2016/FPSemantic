@@ -101,7 +101,7 @@ struct WordPos
 {
     int wordPos;//单词的偏移值
     int NoInDoc;//单词在文章中的编号
-    int paraPos;//单词所属段落的偏移值
+    int senPos;//单词所属句子的偏移值
 };
 
 struct SimilarDoc
